@@ -88,6 +88,9 @@ setup(
 
         [babel.extractors]
         ckan = ckan.lib.extract:extract_ckan
+
+        [ckan.rdf.profiles]        
+        crc_dcat_ap=ckanext.dcatapcrc.profiles.crc_profile:CRCDCATAPProfile
     ''',
 
     # If you are changing from the default layout of your extension, you may

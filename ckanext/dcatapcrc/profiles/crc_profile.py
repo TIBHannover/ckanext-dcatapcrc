@@ -5,6 +5,7 @@ from rdflib import BNode, URIRef, RDF, RDFS, Literal
 from ckanext.dcat.profiles import RDFProfile
 
 DCT = Namespace("http://purl.org/dc/terms/")
+SCHEMAORG = Namespace("https://schema.org/")
 
 
 class CRCDCATAPProfile(RDFProfile):
@@ -17,8 +18,9 @@ class CRCDCATAPProfile(RDFProfile):
     def graph_from_dataset(self, dataset_dict, dataset_ref):
 
         g = self.g
+        g.bind("SCHEMAORG", SCHEMAORG)
 
         ref = URIRef("http://localhost:5000/some_concept")
-        g.add((dataset_ref, DCT.hasPublication, ref ))
+        g.add((dataset_ref, SCHEMAORG.publication, ref ))
         g.add((ref, RDF.type, DCT.publication))
         g.add((ref, RDFS.label, Literal('Jonathan R. Diamond and Joseph V. Bonventre and Morris J. Karnovsky, "A role for oxygen free radicals in aminonucleoside nephrosis", Elsevier BV. Kidney International., vol. 29, pp. 478--483, feb 1986.')))

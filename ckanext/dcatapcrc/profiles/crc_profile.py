@@ -28,11 +28,9 @@ class CRCDCATAPProfile(RDFProfile):
         if len(linked_publications) != 0:
             for citation in linked_publications:
                 schema_org_ref = URIRef("https://schema.org/publication")
-                ncit_citation_ref = URIRef("http://purl.obolibrary.org/obo/NCIT_C41196")
                 
-                
-                # g.add((schema_org_ref, RDF.type, SCHEMAORG.publication))
-
+                ncit_citation_ref = BNode()
+                 
                 g.add((ncit_citation_ref, RDF.type, NCIT.citation))
 
                 g.add((dataset_ref, schema_org_ref, ncit_citation_ref))

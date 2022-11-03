@@ -3,24 +3,46 @@
 from rdflib.namespace import Namespace
 from rdflib import BNode, URIRef, RDF, RDFS, Literal
 from ckanext.dcat.profiles import RDFProfile
+from ckanext.dcatapcrc.libs.helpers import Helper
 
 DCT = Namespace("http://purl.org/dc/terms/")
 SCHEMAORG = Namespace("https://schema.org/")
+NCIT = Namespace('http://purl.obolibrary.org/obo/')
 
 
 class CRCDCATAPProfile(RDFProfile):
     '''
-    An RDF profile for the Swedish DCAT-AP recommendation for data portals
+        An RDF profile for the Swedish DCAT-AP recommendation for data portals
 
-    It requires the European DCAT-AP profile (`euro_dcat_ap`)
+        It requires the European DCAT-AP profile (`euro_dcat_ap`)
     '''
 
     def graph_from_dataset(self, dataset_dict, dataset_ref):
 
         g = self.g
         g.bind("SCHEMAORG", SCHEMAORG)
+        g.bind("NCIT", NCIT)
 
-        ref = URIRef("http://localhost:5000/some_concept")
-        g.add((dataset_ref, SCHEMAORG.publication, ref ))
-        g.add((ref, RDF.type, DCT.publication))
-        g.add((ref, RDFS.label, Literal('Jonathan R. Diamond and Joseph V. Bonventre and Morris J. Karnovsky, "A role for oxygen free radicals in aminonucleoside nephrosis", Elsevier BV. Kidney International., vol. 29, pp. 478--483, feb 1986.')))
+        # add linked publication(s)
+        linked_publications = Helper.get_linked_publication(dataset_dict['name'])        
+        if len(linked_publications) != 0:
+            for citation in linked_publications:
+                schema_org_ref = URIRef("https://schema.org/publication")
+                ncit_citation_ref = URIRef("http://purl.obolibrary.org/obo/NCIT_C41196")
+                
+                
+                # g.add((schema_org_ref, RDF.type, SCHEMAORG.publication))
+
+                g.add((ncit_citation_ref, RDF.type, NCIT.citation))
+
+                g.add((dataset_ref, schema_org_ref, ncit_citation_ref))
+
+                g.add((ncit_citation_ref, RDFS.label, Literal(citation)))
+
+                                
+        
+
+
+        
+        
+        

@@ -7,7 +7,6 @@ from ckanext.dcatapcrc.libs.helpers import Helper
 
 DCT = Namespace("http://purl.org/dc/terms/")
 SCHEMAORG = Namespace("https://schema.org/")
-NCIT = Namespace('http://purl.obolibrary.org/obo/')
 
 
 class CRCDCATAPProfile(RDFProfile):
@@ -20,22 +19,18 @@ class CRCDCATAPProfile(RDFProfile):
     def graph_from_dataset(self, dataset_dict, dataset_ref):
 
         g = self.g
-        g.bind("SCHEMAORG", SCHEMAORG)
-        g.bind("NCIT", NCIT)
+        g.bind("SCHEMAORG", SCHEMAORG)        
 
         # add linked publication(s)
         linked_publications = Helper.get_linked_publication(dataset_dict['name'])        
         if len(linked_publications) != 0:
             for citation in linked_publications:
-                schema_org_ref = URIRef("https://schema.org/publication")
+                schema_org_ref = URIRef("https://schema.org/citation")
+                g.add((dataset_ref, schema_org_ref, Literal(citation)))
                 
-                ncit_citation_ref = BNode()
-                 
-                g.add((ncit_citation_ref, RDF.type, NCIT.citation))
-
-                g.add((dataset_ref, schema_org_ref, ncit_citation_ref))
-
-                g.add((ncit_citation_ref, RDFS.label, Literal(citation)))
+                # ncit_citation_ref = BNode()                 
+                # g.add((ncit_citation_ref, RDF.type, NCIT.citation))                
+                # g.add((ncit_citation_ref, RDFS.label, Literal(citation)))
 
                                 
         

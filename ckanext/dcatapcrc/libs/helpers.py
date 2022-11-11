@@ -18,6 +18,8 @@ def check_plugin_enabled(plugin_name):
 
 if check_plugin_enabled("dataset_reference"):
     from ckanext.dataset_reference.models.package_reference_link import PackageReferenceLink
+if check_plugin_enabled("semantic_media_wiki"):
+    from ckanext.semantic_media_wiki.libs.media_wiki import Helper as mediaWikiHelper
 
 
 
@@ -44,5 +46,15 @@ class Helper():
                 linked_pubs.append(res.citation)
             
         return linked_pubs
+    
+
+    @staticmethod
+    def get_linked_machines(resource_id):
+        if not check_plugin_enabled("semantic_media_wiki"):
+            return {}
+        # a dict of machines [machine_name:machine_link]
+        machines_dict = mediaWikiHelper.get_machine_link(resource_id)
+        return machines_dict
+
     
 

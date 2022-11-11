@@ -46,13 +46,7 @@ class CRCDCATAPProfile(RDFProfile):
                 continue
             for machine_name, machine_url in linked_machines.items():
                 emmo_device = URIRef("http://emmo.info/emmo/Device")
-                g.add((distribution, emmo_device, Literal(machine_name)))
+                machine = CleanedURIRef(machine_url)
+                g.add((distribution, emmo_device, machine))
+                
 
-
-                                
-        
-
-
-        
-        
-        

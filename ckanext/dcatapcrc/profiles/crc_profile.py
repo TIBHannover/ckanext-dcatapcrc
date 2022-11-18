@@ -15,6 +15,7 @@ SCHEMAORG = Namespace("https://schema.org/")
 EMMO = Namespace("http://emmo.info/emmo/")
 TEMA = Namespace("https://www.tib.eu/tema/")
 ENVO = Namespace("http://purl.obolibrary.org/obo/envo/")
+NCIT = Namespace("http://purl.obolibrary.org/obo/ncit/")
 
 
 class CRCDCATAPProfile(RDFProfile):
@@ -33,6 +34,7 @@ class CRCDCATAPProfile(RDFProfile):
         g.bind("dc", DC_ITEMTYPES)
         g.bind("TEMA", TEMA)
         g.bind("ENVO", ENVO)
+        g.bind("NCIT", NCIT)
 
                 
         ## add linked publication(s) ##
@@ -79,3 +81,7 @@ class CRCDCATAPProfile(RDFProfile):
                 g.add((distribution, envo_atmosphere, Literal(resource_dict.get("atmosphere"))))
                 
 
+            ## add data_type ##
+            if resource_dict.get("data_type"):
+                ncit_dataType = URIRef("http://purl.obolibrary.org/obo/ncit/ScientificDataType") 
+                g.add((distribution, ncit_dataType, Literal(resource_dict.get("data_type"))))

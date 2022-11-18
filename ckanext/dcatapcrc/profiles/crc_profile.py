@@ -85,3 +85,9 @@ class CRCDCATAPProfile(RDFProfile):
             if resource_dict.get("data_type"):
                 ncit_dataType = URIRef("http://purl.obolibrary.org/obo/ncit/ScientificDataType") 
                 g.add((distribution, ncit_dataType, Literal(resource_dict.get("data_type"))))
+            
+
+            ## add analysis method ##
+            if resource_dict.get("analysis_method"):
+                ncit_analysisMethod = URIRef("http://purl.obolibrary.org/obo/ncit/AnalysisMethod") 
+                g.add((distribution, ncit_analysisMethod, Literal(resource_dict.get("analysis_method"))))

@@ -20,6 +20,8 @@ if check_plugin_enabled("dataset_reference"):
     from ckanext.dataset_reference.models.package_reference_link import PackageReferenceLink
 if check_plugin_enabled("semantic_media_wiki"):
     from ckanext.semantic_media_wiki.libs.media_wiki import Helper as mediaWikiHelper
+if check_plugin_enabled("sample_link"):
+    from ckanext.semantic_media_wiki.libs.sample_link import SampleLinkHelper
 
 
 
@@ -53,8 +55,16 @@ class Helper():
         if not check_plugin_enabled("semantic_media_wiki"):
             return {}
         # a dict of machines [machine_name:machine_link]
-        machines_dict = mediaWikiHelper.get_machine_link(resource_id)
-        return machines_dict
+        return mediaWikiHelper.get_machine_link(resource_id)        
+    
+
+    @staticmethod
+    def get_linked_samples(resource_id):
+        if not check_plugin_enabled("sample_link"):
+            return {}
+        
+        # a dict of samples [sample_name:sample_link]
+        return SampleLinkHelper.get_sample_link(resource_id)
 
     
 

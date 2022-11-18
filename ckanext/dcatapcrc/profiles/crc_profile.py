@@ -1,14 +1,15 @@
 # encoding: utf-8
 
-from rdflib.namespace import Namespace, SKOS
-from rdflib import BNode, URIRef, RDF, RDFS, Literal
+from rdflib.namespace import Namespace
+from rdflib import URIRef, RDF, RDFS, Literal
 from ckanext.dcat.profiles import RDFProfile
 from ckanext.dcatapcrc.libs.helpers import Helper
 from ckanext.dcat.profiles import CleanedURIRef
 from ckanext.dcat.utils import resource_uri
 
 
-DCT = Namespace("http://purl.org/dc/terms/")
+DC = Namespace("http://purl.org/dc/terms/")
+DC_ITEMTYPES = Namespace("http://purl.org/dc/dcmitype/")
 DCAT = Namespace("http://www.w3.org/ns/dcat#")
 SCHEMAORG = Namespace("https://schema.org/")
 EMMO = Namespace("http://emmo.info/emmo/")
@@ -27,6 +28,7 @@ class CRCDCATAPProfile(RDFProfile):
         
         g.bind("SCHEMAORG", SCHEMAORG)
         g.bind("EMMO", EMMO)
+        g.bind("dc", DC_ITEMTYPES)
                 
         ## add linked publication(s) ##
         linked_publications = Helper.get_linked_publication(dataset_dict['name'])        
@@ -48,5 +50,12 @@ class CRCDCATAPProfile(RDFProfile):
                 emmo_device = URIRef("http://emmo.info/emmo/Device")
                 machine = CleanedURIRef(machine_url)
                 g.add((distribution, emmo_device, machine))
+            
+            ## add samples ##
+            linked_samples = Helper.get_linked_samples(resource_dict['id'])
+            for sample_name, sample_link in linked_samples.items():
+                dc_physical_object = URIRef("http://purl.org/dc/dcmitype/PhysicalObject")
+                sample = CleanedURIRef(sample_link)
+                g.add((distribution, dc_physical_object, sample))
                 
 

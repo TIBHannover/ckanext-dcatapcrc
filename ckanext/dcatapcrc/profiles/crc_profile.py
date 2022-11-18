@@ -13,6 +13,7 @@ DC_ITEMTYPES = Namespace("http://purl.org/dc/dcmitype/")
 DCAT = Namespace("http://www.w3.org/ns/dcat#")
 SCHEMAORG = Namespace("https://schema.org/")
 EMMO = Namespace("http://emmo.info/emmo/")
+TEMA = Namespace("https://www.tib.eu/tema/")
 
 
 class CRCDCATAPProfile(RDFProfile):
@@ -29,6 +30,8 @@ class CRCDCATAPProfile(RDFProfile):
         g.bind("SCHEMAORG", SCHEMAORG)
         g.bind("EMMO", EMMO)
         g.bind("dc", DC_ITEMTYPES)
+        g.bind("TEMA", TEMA)
+
                 
         ## add linked publication(s) ##
         linked_publications = Helper.get_linked_publication(dataset_dict['name'])        
@@ -62,5 +65,10 @@ class CRCDCATAPProfile(RDFProfile):
             if resource_dict.get("material_combination"):
                 emmo_material = URIRef("http://emmo.info/emmo/Material") 
                 g.add((distribution, emmo_material, Literal(resource_dict.get("material_combination"))))
+            
+            ## add surface preparation ##
+            if resource_dict.get("surface_preparation"):
+                tema_sfp = URIRef("https://www.tib.eu/tema/surfacePreparation") 
+                g.add((distribution, tema_sfp, Literal(resource_dict.get("surface_preparation"))))
                 
 

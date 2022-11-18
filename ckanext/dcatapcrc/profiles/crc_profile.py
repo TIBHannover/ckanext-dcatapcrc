@@ -14,6 +14,7 @@ DCAT = Namespace("http://www.w3.org/ns/dcat#")
 SCHEMAORG = Namespace("https://schema.org/")
 EMMO = Namespace("http://emmo.info/emmo/")
 TEMA = Namespace("https://www.tib.eu/tema/")
+ENVO = Namespace("http://purl.obolibrary.org/obo/envo/")
 
 
 class CRCDCATAPProfile(RDFProfile):
@@ -31,6 +32,7 @@ class CRCDCATAPProfile(RDFProfile):
         g.bind("EMMO", EMMO)
         g.bind("dc", DC_ITEMTYPES)
         g.bind("TEMA", TEMA)
+        g.bind("ENVO", ENVO)
 
                 
         ## add linked publication(s) ##
@@ -70,5 +72,10 @@ class CRCDCATAPProfile(RDFProfile):
             if resource_dict.get("surface_preparation"):
                 tema_sfp = URIRef("https://www.tib.eu/tema/surfacePreparation") 
                 g.add((distribution, tema_sfp, Literal(resource_dict.get("surface_preparation"))))
+            
+            ## add atmosphere ##
+            if resource_dict.get("atmosphere"):
+                envo_atmosphere = URIRef("http://purl.obolibrary.org/obo/envo/atmosphere") 
+                g.add((distribution, envo_atmosphere, Literal(resource_dict.get("atmosphere"))))
                 
 

@@ -57,5 +57,10 @@ class CRCDCATAPProfile(RDFProfile):
                 dc_physical_object = URIRef("http://purl.org/dc/dcmitype/PhysicalObject")
                 sample = CleanedURIRef(sample_link)
                 g.add((distribution, dc_physical_object, sample))
+            
+            ## add matarial ##
+            if resource_dict.get("material_combination"):
+                emmo_material = URIRef("http://emmo.info/emmo/Material") 
+                g.add((distribution, emmo_material, Literal(resource_dict.get("material_combination"))))
                 
 

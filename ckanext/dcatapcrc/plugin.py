@@ -25,4 +25,11 @@ class DcatapcrcPlugin(plugins.SingletonPlugin):
             methods=['GET']
             )   
         
+        blueprint.add_url_rule(
+            u'/dcatapcrc/export_catalog',
+            u'export_catalog',
+            BaseController.export_catalog,
+            methods=['GET']
+            )   
+        
         return blueprint 

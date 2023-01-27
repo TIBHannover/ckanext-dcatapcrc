@@ -1,0 +1,11 @@
+export-js:  
+  output: ckanext-dcatapcrc/%(version)s_my.js
+  extra:
+    preload:
+      - base/main
+      - vendor/vendor
+      - vendor/bootstrap
+      - vendor/jquery
+      - vendor/jquery.ui.core
+  contents:
+    - script.js

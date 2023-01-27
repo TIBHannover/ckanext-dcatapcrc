@@ -1,0 +1,7 @@
+{% ckan_extends %}
+
+{% block content_primary_nav %}
+    {{ super() }}
+    {{ h.build_nav_icon('dcat_crc.load_admin_view', _('Catalog'), icon='fa fa-line-chart') }}
+
+{% endblock content_primary_nav %}

@@ -1,0 +1,11 @@
+{% extends "admin/config.html" %}
+
+{% block primary_content_inner %}    
+    <div class="row">
+        <div class="col-sm-12">
+            <a class="btn btn-primary" id="export-catalog-btn">Export Catalog</a>
+        </div>
+    </div>
+    {% asset 'ckanext-dcatapcrc/export-js' %}
+{% endblock %}
+

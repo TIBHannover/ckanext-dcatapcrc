@@ -8,7 +8,9 @@ from ckan.model import Package
 import json
 import requests
 from ckanext.dcat.processors import RDFSerializer
-
+from rdflib import Graph
+from io import StringIO
+from xml.etree import ElementTree
 
 
 class BaseController:
@@ -42,30 +44,30 @@ class BaseController:
         if not ckan_root_path:
             ckan_root_path = "/"
         all_datasets = Package.search_by_name('')
-        catalog_endpoints = []
-        for dataset in all_datasets:
-            if dataset.state == 'active':
-                catalog_endpoints.append(base_url + ckan_root_path + "dataset/" + dataset.name + ".rdf")
-       
-        package = toolkit.get_action('package_show')({}, {'name_or_id': all_datasets[0].name})
-        response = toolkit.get_action('dcat_dataset_show')({}, {'id': package['id'],'format': 'rdf'})                
-        datasets_rdf_format = []
+
+
+        ElementTree.register_namespace("dc", "http://purl.org/dc/terms/")
+        ElementTree.register_namespace("dcat", "http://www.w3.org/ns/dcat#")
+        ElementTree.register_namespace("foaf", "http://xmlns.com/foaf/0.1/")
+        ElementTree.register_namespace("SCHEMAORG", "https://schema.org/")
+        ElementTree.register_namespace("EMMO", "http://emmo.info/emmo/")
+        ElementTree.register_namespace("TEMA", "https://www.tib.eu/tema/")
+        ElementTree.register_namespace("ENVO", "http://purl.obolibrary.org/obo/envo/")
+        ElementTree.register_namespace("NCIT", "http://purl.obolibrary.org/obo/ncit/")
+        xml = ElementTree.fromstring("<RDF></RDF>")
         
-        serializer = RDFSerializer(profiles=package.get('profiles'))
-        rdf_output = serializer.serialize_dataset(package, _format=package.get('format'))
-
-        # datasets_rdf_format.append(output)
-                                
-
-        # for url in catalog_endpoints:
-            # res = requests.get(url, timeout=5, headers={"Authorization": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJqdGkiOiJFdnk4SWRSQnRqQ2VxbFdHTktaNlJ1UkJtcGswM25DMjUzUDZuVER4SFZwam1iZUJacl9qQVNQSjJNLUJZeVVPSFpVUmEwdFAwMGtCTnJ4RyIsImlhdCI6MTY3NDgyMjEwM30.BC3s6KOwbVa00fShoGkinxgBfVrRjAhQuNTgfN6YT2E"})
-            # rdf_contents.append(res.content)
-            # rdf_contents.append(ckan_to_dcat())
-            # break
-
-
-        # return json.dumps(datasets_rdf_format)
+        for dataset in all_datasets:
+            if dataset.state == 'active':                
+                package = toolkit.get_action('package_show')({}, {'name_or_id': dataset.name})                
+                serializer = RDFSerializer(profiles=package.get('profiles'))
+                rdf_output = serializer.serialize_dataset(package)                                
+                # print(ElementTree.fromstring(rdf_output.decode('utf-8'))[0].tag)
+                childNodeList = ElementTree.fromstring(rdf_output.decode('utf-8'))
+                for node in childNodeList: 
+                    xml.append(node)
+        
+        xmlstr = ElementTree.tostring(xml, encoding='utf8', method='xml')
         from flask import make_response
-        response = make_response(rdf_output)
+        response = make_response(xmlstr)
         response.headers['Content-type'] = "application/rdf+xml"
         return response

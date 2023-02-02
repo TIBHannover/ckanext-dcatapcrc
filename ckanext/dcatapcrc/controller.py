@@ -11,6 +11,7 @@ from ckanext.dcat.processors import RDFSerializer
 from rdflib import Graph
 from io import StringIO
 from xml.etree import ElementTree
+from rdflib.namespace import RDF
 
 
 class BaseController:
@@ -47,13 +48,22 @@ class BaseController:
 
 
         ElementTree.register_namespace("dc", "http://purl.org/dc/terms/")
+        ElementTree.register_namespace("dct", "http://purl.org/dc/dcmitype/")
         ElementTree.register_namespace("dcat", "http://www.w3.org/ns/dcat#")
         ElementTree.register_namespace("foaf", "http://xmlns.com/foaf/0.1/")
-        ElementTree.register_namespace("SCHEMAORG", "https://schema.org/")
-        ElementTree.register_namespace("EMMO", "http://emmo.info/emmo/")
-        ElementTree.register_namespace("TEMA", "https://www.tib.eu/tema/")
-        ElementTree.register_namespace("ENVO", "http://purl.obolibrary.org/obo/envo/")
-        ElementTree.register_namespace("NCIT", "http://purl.obolibrary.org/obo/ncit/")
+        ElementTree.register_namespace("schemaorg", "https://schema.org/")
+        ElementTree.register_namespace("emno", "http://emmo.info/emmo/")
+        ElementTree.register_namespace("tema", "https://www.tib.eu/tema/")
+        ElementTree.register_namespace("envo", "http://purl.obolibrary.org/obo/envo/")
+        ElementTree.register_namespace("ncit", "http://purl.obolibrary.org/obo/ncit/")
+        ElementTree.register_namespace("vcard", "http://www.w3.org/2006/vcard/ns#")
+        ElementTree.register_namespace("owl", "http://www.w3.org/2002/07/owl#")
+        ElementTree.register_namespace("adms", "http://www.w3.org/ns/adms#")
+        ElementTree.register_namespace("time", "http://www.w3.org/2006/time")
+        ElementTree.register_namespace("locn", "http://www.w3.org/ns/locn#")
+        ElementTree.register_namespace("gsp", "http://www.opengis.net/ont/geosparql#")
+        ElementTree.register_namespace("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#")
+        
         xml = ElementTree.fromstring("<RDF></RDF>")
         
         for dataset in all_datasets:

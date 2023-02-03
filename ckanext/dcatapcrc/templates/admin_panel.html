@@ -1,9 +1,11 @@
 {% extends "admin/config.html" %}
 
+{% set action = h.url_for('dcat_crc.export_catalog', _external=True) %}
+
 {% block primary_content_inner %}    
     <div class="row">
         <div class="col-sm-12">
-            <a class="btn btn-primary" id="export-catalog-btn">Export Catalog</a>
+            <a class="btn btn-primary" href="{{action}}" id="export-catalog-btn" target="_blank">Export Catalog</a>
         </div>
     </div>
     {% asset 'ckanext-dcatapcrc/export-js' %}

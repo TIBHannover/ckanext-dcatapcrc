@@ -5,13 +5,8 @@ import ckan.plugins.toolkit as toolkit
 import ckan.model as model
 import ckan.logic as logic
 from ckan.model import Package
-import json
-import requests
 from ckanext.dcat.processors import RDFSerializer
-from rdflib import Graph
-from io import StringIO
 from xml.etree import ElementTree
-from rdflib.namespace import RDF
 
 
 class BaseController:
@@ -68,12 +63,18 @@ class BaseController:
         
         for dataset in all_datasets:
             if dataset.state == 'active':                
-                package = toolkit.get_action('package_show')({}, {'name_or_id': dataset.name})                
+                package = toolkit.get_action('package_show')({}, {'name_or_id': dataset.name})
+                ckan_root_path = toolkit.config.get('ckan.root_path')
+                ckan_base_url = toolkit.config.get('ckan.site_url')
+                if ckan_root_path:
+                    package["uri"] = ckan_base_url + "/" + ckan_root_path + "/dataset/" + package['id']
+                else:
+                    package["uri"] = ckan_base_url + "/dataset/" + package['id']                                                  
                 serializer = RDFSerializer(profiles=package.get('profiles'))
                 rdf_output = serializer.serialize_dataset(package)                                
                 # print(ElementTree.fromstring(rdf_output.decode('utf-8'))[0].tag)
                 childNodeList = ElementTree.fromstring(rdf_output.decode('utf-8'))
-                for node in childNodeList: 
+                for node in childNodeList:                     
                     xml.append(node)
         
         xmlstr = ElementTree.tostring(xml, encoding='utf8', method='xml')

@@ -69,8 +69,13 @@ class BaseController:
                 if ckan_root_path:
                     ckan_root_path = ckan_root_path.split("/{{LANG}}")[0]
                     package["uri"] = ckan_base_url + ckan_root_path + "/dataset/" + package['id']
+                    for res in package['resources']:
+                        res["uri"] = ckan_base_url + ckan_root_path + "/dataset/" + package['name'] + "/resource/" + res['id']
                 else:
-                    package["uri"] = ckan_base_url + "/dataset/" + package['id']                                                  
+                    package["uri"] = ckan_base_url + "/dataset/" + package['id']
+                    for res in package['resources']:
+                        res["uri"] = ckan_base_url + "/dataset/" + package['name'] + "/resource/" + res['id']
+                                                              
                 serializer = RDFSerializer(profiles=package.get('profiles'))
                 rdf_output = serializer.serialize_dataset(package)                                
                 # print(ElementTree.fromstring(rdf_output.decode('utf-8'))[0].tag)

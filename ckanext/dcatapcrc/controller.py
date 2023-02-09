@@ -67,7 +67,8 @@ class BaseController:
                 ckan_root_path = toolkit.config.get('ckan.root_path')
                 ckan_base_url = toolkit.config.get('ckan.site_url')
                 if ckan_root_path:
-                    package["uri"] = ckan_base_url + "/" + ckan_root_path + "/dataset/" + package['id']
+                    ckan_root_path = ckan_root_path.split("/{{LANG}}")[0]
+                    package["uri"] = ckan_base_url + ckan_root_path + "/dataset/" + package['id']
                 else:
                     package["uri"] = ckan_base_url + "/dataset/" + package['id']                                                  
                 serializer = RDFSerializer(profiles=package.get('profiles'))

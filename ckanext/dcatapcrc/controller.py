@@ -7,6 +7,8 @@ import ckan.logic as logic
 from ckan.model import Package
 from ckanext.dcat.processors import RDFSerializer
 from xml.etree import ElementTree
+from flask import send_file
+import io
 
 
 class BaseController:
@@ -77,14 +79,11 @@ class BaseController:
                         res["uri"] = ckan_base_url + "/dataset/" + package['name'] + "/resource/" + res['id']
                                                               
                 serializer = RDFSerializer(profiles=package.get('profiles'))
-                rdf_output = serializer.serialize_dataset(package)                                
-                # print(ElementTree.fromstring(rdf_output.decode('utf-8'))[0].tag)
-                childNodeList = ElementTree.fromstring(rdf_output.decode('utf-8'))
-                for node in childNodeList:                     
-                    xml.append(node)
+                rdf_output = serializer.serialize_dataset(package, _format="ttl")                                                
+                # childNodeList = ElementTree.fromstring(rdf_output.decode('utf-8'))
+                # for node in childNodeList:                     
+                    # xml.append(node)
         
-        xmlstr = ElementTree.tostring(xml, encoding='utf8', method='xml')
-        from flask import make_response
-        response = make_response(xmlstr)
-        response.headers['Content-type'] = "application/rdf+xml"
-        return response
+        # xmlstr = ElementTree.tostring(xml, encoding='utf8', method='xml')        
+        file = io.BytesIO(rdf_output)        
+        return send_file(file, mimetype='application/ttl', attachment_filename="ckancatlog.ttl", as_attachment = True)

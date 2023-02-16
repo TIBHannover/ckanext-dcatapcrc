@@ -62,7 +62,7 @@ class BaseController:
         ElementTree.register_namespace("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#")
         
         xml = ElementTree.fromstring("<RDF></RDF>")
-        
+        dataset_dicts = []
         for dataset in all_datasets:
             if dataset.state == 'active':                
                 package = toolkit.get_action('package_show')({}, {'name_or_id': dataset.name})
@@ -78,12 +78,17 @@ class BaseController:
                     for res in package['resources']:
                         res["uri"] = ckan_base_url + "/dataset/" + package['name'] + "/resource/" + res['id']
                                                               
-                serializer = RDFSerializer(profiles=package.get('profiles'))
-                rdf_output = serializer.serialize_dataset(package, _format="ttl")                                                
+                dataset_dicts.append(package)
+                
+                # serializer = RDFSerializer(profiles=package.get('profiles'))
+                # rdf_output = serializer.serialize_dataset(package, _format="ttl")                                                
                 # childNodeList = ElementTree.fromstring(rdf_output.decode('utf-8'))
                 # for node in childNodeList:                     
                     # xml.append(node)
         
+
+        serializer = RDFSerializer(profiles=package.get('profiles'))
+        rdf_output = serializer.serialize_catalog(dataset_dicts=dataset_dicts, _format="ttl")    
         # xmlstr = ElementTree.tostring(xml, encoding='utf8', method='xml')        
         file = io.BytesIO(rdf_output)        
         return send_file(file, mimetype='application/ttl', attachment_filename="ckancatlog.ttl", as_attachment = True)

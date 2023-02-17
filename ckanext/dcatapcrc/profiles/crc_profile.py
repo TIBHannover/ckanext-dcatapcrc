@@ -38,8 +38,8 @@ class CRCDCATAPProfile(RDFProfile):
 
                 
         ## add linked publication(s) ##
-        linked_publications = Helper.get_linked_publication(dataset_dict['name'])        
-        if len(linked_publications) != 0:
+        linked_publications = Helper.get_linked_publication(dataset_dict.get('name'))        
+        if linked_publications:
             for citation in linked_publications:
                 schema_org_citation = URIRef("https://schema.org/citation")
                 g.add((dataset_ref, schema_org_citation, Literal(citation)))

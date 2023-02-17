@@ -48,7 +48,7 @@ class Helper():
         linked_pubs = []
         res_object = PackageReferenceLink({})
         result = res_object.get_by_package(name=dataset_name)        
-        if result != false and len(result) != 0:
+        if result:
             for res in result:
                 linked_pubs.append(res.citation)
             
@@ -77,6 +77,19 @@ class Helper():
         for s,p,o in graph:
             s,p,o = Helper.clean_triples(s,p,o)
             query = 'INSERT DATA{ ' + s + ' ' + p + ' ' + o + ' .  }'            
+            sparql = SPARQLWrapper(SPARQL_ENDPOINT)                        
+            sparql.setMethod(POST)
+            sparql.setQuery(query)
+            results = sparql.query() 
+
+        return results
+
+
+    @staticmethod
+    def delete_from_sparql(graph):
+        for s,p,o in graph:
+            s,p,o = Helper.clean_triples(s,p,o)
+            query = 'DELETE WHERE{ ' + s + ' ' + p + ' ' + o + ' .  }'            
             sparql = SPARQLWrapper(SPARQL_ENDPOINT)                        
             sparql.setMethod(POST)
             sparql.setQuery(query)

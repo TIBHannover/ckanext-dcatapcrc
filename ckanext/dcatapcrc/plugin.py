@@ -47,16 +47,16 @@ class DcatapcrcPlugin(plugins.SingletonPlugin):
             Post the dataset metadata to the sparql endpoint
         '''
 
-        serializer = RDFSerializer(profiles=pkg_dict.get('profiles'))
-        rdf_output = serializer.serialize_dataset(pkg_dict, _format="rdf")                                                
-        childNodeList = ElementTree.fromstring(rdf_output.decode('utf-8'))
-        for node in childNodeList:                     
-            print(node)
-
+        try:
+            graph = Helper.get_dataset_graph(pkg_dict)
+            res = Helper.insert_to_sparql(graph)
+        except:
+            return pkg_dict            
 
         return pkg_dict
 
     
+
     def after_update(self, context, pkg_dict):
         '''
             Upadte an existing dataset metadata on the sparql endpoint
@@ -64,7 +64,8 @@ class DcatapcrcPlugin(plugins.SingletonPlugin):
 
         try:
             graph = Helper.get_dataset_graph(pkg_dict)
-            res = Helper.insert_to_sparql(graph)
+            res_d = Helper.delete_from_sparql(graph)
+            res_i = Helper.insert_to_sparql(graph)
         except:
             return pkg_dict
             # raise
@@ -72,11 +73,25 @@ class DcatapcrcPlugin(plugins.SingletonPlugin):
         return pkg_dict
     
     
-    def after_search(self, search_results, search_params):        
-        return search_results
 
     def after_delete(self, context, pkg_dict):
+        '''
+            Delete an existing dataset metadata on the sparql endpoint
+        '''
+
+        try:
+            graph = Helper.get_dataset_graph(pkg_dict)
+            res_d = Helper.delete_from_sparql(graph)            
+        except:
+            # return pkg_dict
+            raise
+        
         return pkg_dict
+    
+
+
+    def after_search(self, search_results, search_params):        
+        return search_results
     
     def read(self, entity):
         return entity

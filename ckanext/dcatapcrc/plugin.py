@@ -2,12 +2,9 @@ import ckan.plugins as plugins
 import ckan.plugins.toolkit as toolkit
 from flask import Blueprint
 from ckanext.dcatapcrc.controller import BaseController
+from ckanext.dcatapcrc.libs.helpers import Helper
 from ckanext.dcat.processors import RDFSerializer
 from xml.etree import ElementTree
-from SPARQLWrapper import SPARQLWrapper, POST
-
-
-SPARQL_ENDPOINT = "http://sparql11.test.service.tib.eu/fuseki/TestCKAN/update"
 
 
 class DcatapcrcPlugin(plugins.SingletonPlugin):
@@ -65,35 +62,13 @@ class DcatapcrcPlugin(plugins.SingletonPlugin):
             Upadte an existing dataset metadata on the sparql endpoint
         '''
 
-        # print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-        # print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-        # print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-        # print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-
-        serializer = RDFSerializer(profiles=pkg_dict.get('profiles'))        
-        gr_dataset = serializer.graph_from_dataset(pkg_dict)                        
-        graph = serializer.g        
-        for s,p,o in graph:
-            # print(s,p,o)
-            if "http" in s:
-                s = "<" + s + ">"
-            if "http" in p:
-                p = "<" + p + ">"
-            if "http" in o:
-                o = "<" + o + ">"
-            if "http" not in o:
-                o = "'" + o + "'"
-            if s[0] == "N":
-                s = '_:' + s            
-            if o[0] == "N":
-                o = '_:' + o
-
-            
-            query = 'INSERT DATA{ ' + s + ' ' + p + ' ' + o + ' .  }'            
-            sparql = SPARQLWrapper(SPARQL_ENDPOINT)                        
-            sparql.setMethod(POST)
-            sparql.setQuery(query)
-            results = sparql.query()            
+        try:
+            graph = Helper.get_dataset_graph(pkg_dict)
+            res = Helper.insert_to_sparql(graph)
+        except:
+            return pkg_dict
+            # raise
+                               
         return pkg_dict
     
     

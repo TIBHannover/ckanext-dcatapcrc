@@ -3,7 +3,12 @@
 from os import link
 import ckan.plugins.toolkit as toolkit
 from sqlalchemy.sql.expression import false
+from SPARQLWrapper import SPARQLWrapper, POST
+from ckanext.dcat.processors import RDFSerializer
+from SPARQLWrapper import SPARQLWrapper, POST
 
+
+SPARQL_ENDPOINT = "http://sparql11.test.service.tib.eu/fuseki/TestCKAN/update"
  
 def check_plugin_enabled(plugin_name):
         '''
@@ -65,6 +70,43 @@ class Helper():
         
         # a dict of samples [sample_name:sample_link]
         return SampleLinkHelper.get_sample_link(resource_id)
+    
 
+    @staticmethod
+    def insert_to_sparql(graph):
+        for s,p,o in graph:
+            s,p,o = Helper.clean_triples(s,p,o)
+            query = 'INSERT DATA{ ' + s + ' ' + p + ' ' + o + ' .  }'            
+            sparql = SPARQLWrapper(SPARQL_ENDPOINT)                        
+            sparql.setMethod(POST)
+            sparql.setQuery(query)
+            results = sparql.query() 
+
+        return results
+
+
+    @staticmethod
+    def get_dataset_graph(dataset_dict):
+        serializer = RDFSerializer(profiles=dataset_dict.get('profiles'))
+        gr_dataset = serializer.graph_from_dataset(dataset_dict)        
+        return  serializer.g
+
+
+    @staticmethod
+    def clean_triples(s,p,o):
+        if "http" in s:
+                s = "<" + s + ">"
+        if "http" in p:
+            p = "<" + p + ">"
+        if "http" in o:
+            o = "<" + o + ">"
+        if "http" not in o:
+            o = "'" + o + "'"
+        if s[0] == "N":
+            s = '_:' + s            
+        if o[0] == "N":
+            o = '_:' + o
+        
+        return [s,p,o]
     
 

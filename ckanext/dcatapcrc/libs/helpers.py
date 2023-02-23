@@ -48,7 +48,7 @@ class Helper():
         linked_pubs = []
         res_object = PackageReferenceLink({})
         result = res_object.get_by_package(name=dataset_name)        
-        if result:
+        if result != false:
             for res in result:
                 linked_pubs.append(res.citation)
             

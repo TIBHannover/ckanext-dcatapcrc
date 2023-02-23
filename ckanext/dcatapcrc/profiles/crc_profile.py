@@ -16,6 +16,8 @@ EMMO = Namespace("http://emmo.info/emmo/")
 TEMA = Namespace("https://www.tib.eu/tema/")
 ENVO = Namespace("http://purl.obolibrary.org/obo/envo/")
 NCIT = Namespace("http://purl.obolibrary.org/obo/ncit/")
+OWL = Namespace('http://www.w3.org/2002/07/owl#')
+ADMS = Namespace("http://www.w3.org/ns/adms#")
 
 
 class CRCDCATAPProfile(RDFProfile):
@@ -26,7 +28,6 @@ class CRCDCATAPProfile(RDFProfile):
     '''
 
     def graph_from_dataset(self, dataset_dict, dataset_ref):
-
         g = self.g
         
         g.bind("SCHEMAORG", SCHEMAORG)
@@ -91,3 +92,4 @@ class CRCDCATAPProfile(RDFProfile):
             if resource_dict.get("analysis_method"):
                 ncit_analysisMethod = URIRef("http://purl.obolibrary.org/obo/ncit/AnalysisMethod") 
                 g.add((distribution, ncit_analysisMethod, Literal(resource_dict.get("analysis_method"))))
+       

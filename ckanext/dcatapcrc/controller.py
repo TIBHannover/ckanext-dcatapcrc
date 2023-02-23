@@ -80,15 +80,7 @@ class BaseController:
                                                               
                 dataset_dicts.append(package)
                 
-                # serializer = RDFSerializer(profiles=package.get('profiles'))
-                # rdf_output = serializer.serialize_dataset(package, _format="ttl")                                                
-                # childNodeList = ElementTree.fromstring(rdf_output.decode('utf-8'))
-                # for node in childNodeList:                     
-                    # xml.append(node)
-        
-
         serializer = RDFSerializer(profiles=package.get('profiles'))
-        rdf_output = serializer.serialize_catalog(dataset_dicts=dataset_dicts, _format="ttl")    
-        # xmlstr = ElementTree.tostring(xml, encoding='utf8', method='xml')        
-        file = io.BytesIO(rdf_output)        
+        rdf_output = serializer.serialize_catalog(dataset_dicts=dataset_dicts, _format="ttl")        
+        file = io.BytesIO(rdf_output.encode())        
         return send_file(file, mimetype='application/ttl', attachment_filename="ckancatlog.ttl", as_attachment = True)

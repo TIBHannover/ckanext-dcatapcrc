@@ -89,18 +89,29 @@ class Helper():
     def delete_from_sparql(graph):
         for s,p,o in graph:
             s,p,o = Helper.clean_triples(s,p,o)
-            query = 'DELETE WHERE{ ' + s + ' ' + p + ' ' + o + ' .  }'            
-            sparql = SPARQLWrapper(SPARQL_ENDPOINT)                        
-            sparql.setMethod(POST)
-            sparql.setQuery(query)
-            results = sparql.query() 
+            query = ""           
+            if "_:N" in o:
+                # blank node as object
+                query = 'DELETE{ ' + s + ' ' + p + ' ?bnode . ?bnode ?p ?o .} WHERE{ '  + s + ' ' + p + ' ?bnode . ?bnode ?p ?o . FILTER (isBlank(?bnode))}'
+                sparql = SPARQLWrapper(SPARQL_ENDPOINT)                        
+                sparql.setMethod(POST)
+                sparql.setQuery(query)
+                results = sparql.query()
+            elif "_:N" not in s and "_:N" not in p:
+                query = 'DELETE WHERE{ ' + s + ' ' + p + ' ' + o + ' .  }'
+                sparql = SPARQLWrapper(SPARQL_ENDPOINT)                        
+                sparql.setMethod(POST)
+                sparql.setQuery(query)
+                results = sparql.query()
+            
+            print(query)             
 
         return results
 
 
     @staticmethod
     def get_dataset_graph(dataset_dict):
-
+        dataset_dict = Helper.setDatasetUri(dataset_dict)
         serializer = RDFSerializer(profiles=dataset_dict.get('profiles'))
         gr_dataset = serializer.graph_from_dataset(dataset_dict)        
         return  serializer.g
@@ -109,7 +120,7 @@ class Helper():
     @staticmethod
     def clean_triples(s,p,o):
         if "http" in s:
-                s = "<" + s + ">"
+            s = "<" + s + ">"
         if "http" in p:
             p = "<" + p + ">"
         if "http" in o:
@@ -119,7 +130,9 @@ class Helper():
         if s[0] == "N":
             s = '_:' + s            
         if o[0] == "N":
-            o = '_:' + o
+            o = '_:' + o 
+
+        o = o.replace('\\', '\\\\')              
         
         return [s,p,o]
     
@@ -127,6 +140,7 @@ class Helper():
 
     @staticmethod
     def setDatasetUri(package):
+        print(package)
         ckan_root_path = toolkit.config.get('ckan.root_path')
         ckan_base_url = toolkit.config.get('ckan.site_url')
         if ckan_root_path:

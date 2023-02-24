@@ -36,14 +36,8 @@ class BaseController:
             logic.check_access('sysadmin', context, {})
         except logic.NotAuthorized:
             toolkit.abort(403, 'Need to be system administrator to administer')
-        
-        
-        base_url = toolkit.config.get('ckan.site_url')
-        ckan_root_path = toolkit.config.get('ckan.root_path')
-        if not ckan_root_path:
-            ckan_root_path = "/"
+                
         all_datasets = Package.search_by_name('')
-
 
         ElementTree.register_namespace("dc", "http://purl.org/dc/terms/")
         ElementTree.register_namespace("dct", "http://purl.org/dc/dcmitype/")
@@ -66,7 +60,7 @@ class BaseController:
         dataset_dicts = []
         for dataset in all_datasets:
             if dataset.state == 'active':                
-                package = toolkit.get_action('package_show')({}, {'name_or_id': dataset.name})                
+                package = toolkit.get_action('package_show')({}, {'name_or_id': dataset.name})
                 package = Helper.setDatasetUri(package)                                                              
                 dataset_dicts.append(package)
                 

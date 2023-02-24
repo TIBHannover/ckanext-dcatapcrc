@@ -102,9 +102,7 @@ class Helper():
                 sparql = SPARQLWrapper(SPARQL_ENDPOINT)                        
                 sparql.setMethod(POST)
                 sparql.setQuery(query)
-                results = sparql.query()
-            
-            print(query)             
+                results = sparql.query()                        
 
         return results
 

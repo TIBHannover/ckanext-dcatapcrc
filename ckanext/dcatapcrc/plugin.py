@@ -48,11 +48,12 @@ class DcatapcrcPlugin(plugins.SingletonPlugin):
         '''
 
         try:
-            graph = Helper.get_dataset_graph(pkg_dict)
+            package = toolkit.get_action('package_show')({}, {'name_or_id': pkg_dict['id']})
+            graph = Helper.get_dataset_graph(package)
             res = Helper.insert_to_sparql(graph)
         except:
-            # return pkg_dict
-            raise
+            return pkg_dict
+            # raise
 
         return pkg_dict
 
@@ -69,8 +70,8 @@ class DcatapcrcPlugin(plugins.SingletonPlugin):
             res_d = Helper.delete_from_sparql(graph)
             res_i = Helper.insert_to_sparql(graph)
         except:
-            # return pkg_dict
-            raise
+            return pkg_dict
+            # raise
                                
         return pkg_dict
     
@@ -86,8 +87,8 @@ class DcatapcrcPlugin(plugins.SingletonPlugin):
             graph = Helper.get_dataset_graph(package)
             res_d = Helper.delete_from_sparql(graph)            
         except:
-            # return pkg_dict
-            raise
+            return pkg_dict
+            # raise
         
         return pkg_dict
     

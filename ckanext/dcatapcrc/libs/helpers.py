@@ -98,7 +98,7 @@ class Helper():
                 sparql.setQuery(query)
                 results = sparql.query()
             elif "_:N" not in s and "_:N" not in p:
-                query = 'DELETE WHERE{ ' + s + ' ' + p + ' ' + o + ' .  }'
+                query = 'DELETE WHERE{ ' + s + ' ' + p + ' ?anything .  }'
                 sparql = SPARQLWrapper(SPARQL_ENDPOINT)                        
                 sparql.setMethod(POST)
                 sparql.setQuery(query)

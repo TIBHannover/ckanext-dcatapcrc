@@ -9,6 +9,7 @@ from ckanext.dcat.processors import RDFSerializer
 from xml.etree import ElementTree
 from flask import send_file
 import io
+from ckanext.dcatapcrc.libs.helpers import Helper
 
 
 class BaseController:
@@ -65,19 +66,8 @@ class BaseController:
         dataset_dicts = []
         for dataset in all_datasets:
             if dataset.state == 'active':                
-                package = toolkit.get_action('package_show')({}, {'name_or_id': dataset.name})
-                ckan_root_path = toolkit.config.get('ckan.root_path')
-                ckan_base_url = toolkit.config.get('ckan.site_url')
-                if ckan_root_path:
-                    ckan_root_path = ckan_root_path.split("/{{LANG}}")[0]
-                    package["uri"] = ckan_base_url + ckan_root_path + "/dataset/" + package['id']
-                    for res in package['resources']:
-                        res["uri"] = ckan_base_url + ckan_root_path + "/dataset/" + package['name'] + "/resource/" + res['id']
-                else:
-                    package["uri"] = ckan_base_url + "/dataset/" + package['id']
-                    for res in package['resources']:
-                        res["uri"] = ckan_base_url + "/dataset/" + package['name'] + "/resource/" + res['id']
-                                                              
+                package = toolkit.get_action('package_show')({}, {'name_or_id': dataset.name})                
+                package = Helper.setDatasetUri(package)                                                              
                 dataset_dicts.append(package)
                 
         serializer = RDFSerializer(profiles=package.get('profiles'))

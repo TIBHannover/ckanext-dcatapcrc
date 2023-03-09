@@ -11,6 +11,7 @@ class DcatapcrcPlugin(plugins.SingletonPlugin):
     plugins.implements(plugins.IConfigurer)
     plugins.implements(plugins.IBlueprint)
     plugins.implements(plugins.IPackageController)
+    plugins.implements(plugins.IResourceController)
 
     # IConfigurer
 
@@ -120,3 +121,41 @@ class DcatapcrcPlugin(plugins.SingletonPlugin):
 
     def before_view(self, pkg_dict):
         return pkg_dict
+    
+
+
+     # IResourceController
+
+    def after_create(self, context, resource):        
+        return resource
+    
+    def after_update(self, context, resource):
+        try:
+            package = toolkit.get_action('package_show')({}, {'name_or_id': resource['package_id']})
+            package['extras'].append({"key": "c1", "value": "2"})
+            toolkit.get_action('package_update')({},package)            
+        except:
+            return resource
+        
+        return resource
+    
+
+    def after_delete(self, context, resources):
+        return resources
+
+    def before_create(self, context, resource):
+        return resource
+
+    def before_update(self, context, current, resource):
+        return resource
+     
+    def before_delete(self, context, resource, resources):
+        return resources
+    
+    def after_delete(self, context, resources):
+        return resources
+    
+    def before_show(self, resource_dict):
+        return resource_dict
+    
+

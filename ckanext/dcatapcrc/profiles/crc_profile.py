@@ -45,15 +45,13 @@ class CRCDCATAPProfile(RDFProfile):
                 schema_org_citation = URIRef("https://schema.org/citation")
                 g.add((dataset_ref, schema_org_citation, Literal(citation)))
 
-
-        for resource_dict in dataset_dict.get('resources', []):
+        
+        for resource_dict in dataset_dict.get('resources', []):            
 
             distribution = CleanedURIRef(resource_uri(resource_dict))
 
              ## add machines ##
-            linked_machines = Helper.get_linked_machines(resource_dict['id'])
-            if len(linked_machines.keys()) == 0:
-                continue
+            linked_machines = Helper.get_linked_machines(resource_dict['id'])            
             for machine_name, machine_url in linked_machines.items():
                 emmo_device = URIRef("http://emmo.info/emmo/Device")
                 machine = CleanedURIRef(machine_url)
@@ -70,9 +68,9 @@ class CRCDCATAPProfile(RDFProfile):
             if resource_dict.get("material_combination"):
                 emmo_material = URIRef("http://emmo.info/emmo/Material") 
                 g.add((distribution, emmo_material, Literal(resource_dict.get("material_combination"))))
-            
+                        
             ## add surface preparation ##
-            if resource_dict.get("surface_preparation"):
+            if resource_dict.get("surface_preparation"):                
                 tema_sfp = URIRef("https://www.tib.eu/tema/surfacePreparation") 
                 g.add((distribution, tema_sfp, Literal(resource_dict.get("surface_preparation"))))
             

@@ -108,7 +108,7 @@ class Helper():
 
 
     @staticmethod
-    def get_dataset_graph(dataset_dict):
+    def get_dataset_graph(dataset_dict):        
         dataset_dict = Helper.setDatasetUri(dataset_dict)
         serializer = RDFSerializer(profiles=dataset_dict.get('profiles'))
         gr_dataset = serializer.graph_from_dataset(dataset_dict)        
@@ -137,8 +137,7 @@ class Helper():
 
 
     @staticmethod
-    def setDatasetUri(package):
-        print(package)
+    def setDatasetUri(package):        
         ckan_root_path = toolkit.config.get('ckan.root_path')
         ckan_base_url = toolkit.config.get('ckan.site_url')
         if ckan_root_path:

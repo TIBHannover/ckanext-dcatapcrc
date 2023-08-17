@@ -8,7 +8,6 @@ from ckanext.dcat.processors import RDFSerializer
 from SPARQLWrapper import SPARQLWrapper, POST
 
 
-SPARQL_ENDPOINT = "http://sparql11.test.service.tib.eu/fuseki/TestCKAN/update"
  
 def check_plugin_enabled(plugin_name):
         '''
@@ -31,6 +30,10 @@ if check_plugin_enabled("sample_link"):
 
 
 class Helper():
+
+    def get_apache_jena_endpoint():
+        return toolkit.config.get('ckanext.apacheJena.endpoint')  
+    
 
     def get_linked_publication(dataset_name):
         '''
@@ -77,7 +80,7 @@ class Helper():
         for s,p,o in graph:
             s,p,o = Helper.clean_triples(s,p,o)
             query = 'INSERT DATA{ ' + s + ' ' + p + ' ' + o + ' .  }'            
-            sparql = SPARQLWrapper(SPARQL_ENDPOINT)                        
+            sparql = SPARQLWrapper(Helper.get_apache_jena_endpoint())                        
             sparql.setMethod(POST)
             sparql.setQuery(query)
             results = sparql.query() 
@@ -93,13 +96,13 @@ class Helper():
             if "_:N" in o:
                 # blank node as object
                 query = 'DELETE{ ' + s + ' ' + p + ' ?bnode . ?bnode ?p ?o .} WHERE{ '  + s + ' ' + p + ' ?bnode . ?bnode ?p ?o . FILTER (isBlank(?bnode))}'
-                sparql = SPARQLWrapper(SPARQL_ENDPOINT)                        
+                sparql = SPARQLWrapper(Helper.get_apache_jena_endpoint())                        
                 sparql.setMethod(POST)
                 sparql.setQuery(query)
                 results = sparql.query()
             elif "_:N" not in s and "_:N" not in p:
                 query = 'DELETE WHERE{ ' + s + ' ' + p + ' ?anything .  }'
-                sparql = SPARQLWrapper(SPARQL_ENDPOINT)                        
+                sparql = SPARQLWrapper(Helper.get_apache_jena_endpoint())                        
                 sparql.setMethod(POST)
                 sparql.setQuery(query)
                 results = sparql.query()                        

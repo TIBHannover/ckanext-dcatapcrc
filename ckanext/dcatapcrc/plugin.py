@@ -175,9 +175,6 @@ class DcatapcrcPlugin(plugins.SingletonPlugin):
     def before_update(self, context, current, resource):
         return resource
      
-    def after_delete(self, context, resources):
-        return resources
-    
     def before_show(self, resource_dict):
         return resource_dict
     

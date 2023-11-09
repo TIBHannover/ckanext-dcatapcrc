@@ -2,7 +2,7 @@
 
 
 {% block primary_content_inner %}
-    {% if h.is_plugin_enabled('crc1153_dcat_profile') %}
+    {% if h.is_plugin_enabled('dcat_crc') %}
         {% asset 'ckanext-dcatapcrc/profile-js' %}
         {% set export_action = h.url_for('dcat_crc.export_catalog', _external=True) %}
         {% set push_sparql_action = h.url_for('dcat_crc.push_to_sparql', _external=True) %}

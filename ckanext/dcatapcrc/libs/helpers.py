@@ -6,6 +6,8 @@ from sqlalchemy.sql.expression import false
 from SPARQLWrapper import SPARQLWrapper, POST
 from ckanext.dcat.processors import RDFSerializer
 from SPARQLWrapper import SPARQLWrapper, POST
+import ckan.model as model
+import ckan.logic as logic
 
 
  
@@ -30,6 +32,17 @@ if check_plugin_enabled("sample_link"):
 
 
 class Helper():
+
+    
+    def abort_if_not_admin():
+        context = {'model': model,
+                   'user': toolkit.g.user, 'auth_user_obj': toolkit.g.userobj}
+        try:
+            logic.check_access('sysadmin', context, {})
+        except logic.NotAuthorized:
+            toolkit.abort(404, 'Not Found')
+
+
 
     def get_apache_jena_endpoint():
         return toolkit.config.get('ckanext.apacheJena.endpoint')  

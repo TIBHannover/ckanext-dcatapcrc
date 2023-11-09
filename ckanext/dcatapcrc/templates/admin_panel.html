@@ -1,13 +1,33 @@
 {% extends "admin/config.html" %}
 
-{% set action = h.url_for('dcat_crc.export_catalog', _external=True) %}
 
-{% block primary_content_inner %}    
-    <div class="row">
-        <div class="col-sm-12">
-            <a class="btn btn-primary" href="{{action}}" id="export-catalog-btn" target="_blank">Export Catalog</a>
+{% block primary_content_inner %}
+    {% if h.is_plugin_enabled('crc1153_dcat_profile') %}
+        {% asset 'ckanext-dcatapcrc/profile-js' %}
+        {% set export_action = h.url_for('dcat_crc.export_catalog', _external=True) %}
+        {% set push_sparql_action = h.url_for('dcat_crc.push_to_sparql', _external=True) %}
+        {% set delete_sparql_action = h.url_for('dcat_crc.delete_from_sparql', _external=True) %}
+        <input type="hidden" value="{{push_sparql_action}}" id="push-to-sparql-url" />
+        <input type="hidden" value="{{delete_sparql_action}}" id="delete-sparql-url" />
+        <div class="row" id="alert_container"></div>
+        
+        <div class="row">
+            <div class="col-sm-12">
+                <a class="btn btn-primary" href="{{export_action}}" id="export-catalog-btn" target="_blank">Export Catalog</a>              
+            </div>
         </div>
-    </div>
-    {% asset 'ckanext-dcatapcrc/export-js' %}
+        <br/>
+        <div class="row">
+            <div class="col-sm-12">                
+                <a class="btn btn-primary" href="#" id="push-to-sparql-btn" >Push CKAN Datasets Metadata To SPARQL</a>
+            </div>
+        </div>
+        <br/>
+        <div class="row">
+            <div class="col-sm-12">                
+                <a class="btn btn-danger" href="#" id="delete-sparql-btn">Delete CKAN Datasets Metadata From SPARQL</a>
+            </div>
+        </div>
+    {% endif %}   
 {% endblock %}
 

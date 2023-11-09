@@ -10,6 +10,8 @@ from xml.etree import ElementTree
 from flask import send_file
 import io
 from ckanext.dcatapcrc.libs.helpers import Helper
+from ckan.model import Package
+import json
 
 
 class BaseController:
@@ -17,12 +19,7 @@ class BaseController:
 
     def load_admin_view():
 
-        context = {'model': model,
-                   'user': toolkit.g.user, 'auth_user_obj': toolkit.g.userobj}
-        try:
-            logic.check_access('sysadmin', context, {})
-        except logic.NotAuthorized:
-            toolkit.abort(403, 'Need to be system administrator to administer')
+        Helper.abort_if_not_admin()
 
         return render_template('admin_panel.html')
     
@@ -30,12 +27,7 @@ class BaseController:
 
     def export_catalog():
 
-        context = {'model': model,
-                   'user': toolkit.g.user, 'auth_user_obj': toolkit.g.userobj}
-        try:
-            logic.check_access('sysadmin', context, {})
-        except logic.NotAuthorized:
-            toolkit.abort(403, 'Need to be system administrator to administer')
+        Helper.abort_if_not_admin()
                 
         all_datasets = Package.search_by_name('')
 
@@ -68,3 +60,59 @@ class BaseController:
         rdf_output = serializer.serialize_catalog(dataset_dicts=dataset_dicts, _format="ttl")        
         file = io.BytesIO(rdf_output.encode())        
         return send_file(file, mimetype='application/ttl', attachment_filename="ckancatlog.ttl", as_attachment = True)
+    
+
+
+    def push_to_sparql():
+        Helper.abort_if_not_admin()
+        all_datasets = Package.search_by_name('')
+        all_graphs = []
+        for dataset in all_datasets:
+            if dataset.state == 'active':
+                package = toolkit.get_action('package_show')({}, {'name_or_id': dataset.name})
+                package = Helper.setDatasetUri(package)   
+                graph = Helper.get_dataset_graph(package)
+                all_graphs.append(graph)
+
+
+        toolkit.enqueue_job(push_catalog_to_sparql, kwargs={'catalog_graphs': all_graphs})
+                
+        return json.dumps({"_result": True})
+    
+
+
+    def delete_from_sparql():
+        Helper.abort_if_not_admin()
+        all_datasets = Package.search_by_name('')
+        all_graphs = []
+        for dataset in all_datasets:
+            if dataset.state == 'active':
+                package = toolkit.get_action('package_show')({}, {'name_or_id': dataset.name})
+                package = Helper.setDatasetUri(package)   
+                graph = Helper.get_dataset_graph(package)
+                all_graphs.append(graph)
+
+
+        toolkit.enqueue_job(delete_catalog_from_sparql, kwargs={'catalog_graphs': all_graphs})
+                
+        return json.dumps({"_result": True})
+    
+
+
+
+def push_catalog_to_sparql(catalog_graphs):
+    for graph in catalog_graphs:
+        try:
+            res_d = Helper.delete_from_sparql(graph)
+            res_i = Helper.insert_to_sparql(graph)
+        except:
+            continue
+
+
+
+def delete_catalog_from_sparql(catalog_graphs):
+    for graph in catalog_graphs:
+        try:
+            res_d = Helper.delete_from_sparql(graph)            
+        except:
+            continue

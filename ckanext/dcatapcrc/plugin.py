@@ -35,7 +35,21 @@ class DcatapcrcPlugin(plugins.SingletonPlugin):
             u'export_catalog',
             BaseController.export_catalog,
             methods=['GET']
-            )   
+            )
+
+        blueprint.add_url_rule(
+            u'/dcatapcrc/push_to_sparql',
+            u'push_to_sparql',
+            BaseController.push_to_sparql,
+            methods=['GET']
+            ) 
+
+        blueprint.add_url_rule(
+            u'/dcatapcrc/delete_from_sparql',
+            u'delete_from_sparql',
+            BaseController.delete_from_sparql,
+            methods=['GET']
+            )      
         
         return blueprint 
     
@@ -126,8 +140,6 @@ class DcatapcrcPlugin(plugins.SingletonPlugin):
 
      # IResourceController
 
-    def after_create(self, context, resource):        
-        return resource
     
     def after_update(self, context, resource):
         try:
@@ -164,10 +176,6 @@ class DcatapcrcPlugin(plugins.SingletonPlugin):
         return resources
     
     
-    
-    def after_delete(self, context, resources):        
-        return resources
-
 
     def before_create(self, context, resource):
         return resource

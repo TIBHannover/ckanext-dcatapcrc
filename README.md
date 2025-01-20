@@ -1,4 +1,4 @@
-[![Tests](https://github.com//ckanext-dcatapcrc/workflows/Tests/badge.svg?branch=main)](https://github.com//ckanext-dcatapcrc/actions)
+[![CI](https://github.com/TIBHannover/ckanext-dcatapcrc/actions/workflows/test.yml/badge.svg)](https://github.com/TIBHannover/ckanext-dcatapcrc/actions/workflows/test.yml)
 
 # ckanext-dcatapcrc
 

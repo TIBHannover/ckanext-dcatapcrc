@@ -1,1 +1,2 @@
 SPARQLWrapper
+git+https://github.com/ckan/ckanext-dcat.git@v2.1.0#egg=ckanext-dcat

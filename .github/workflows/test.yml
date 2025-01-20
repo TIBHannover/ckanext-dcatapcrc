@@ -90,6 +90,6 @@ jobs:
 
     - name: Run tests
       continue-on-error: ${{ matrix.experimental }}
-      run: pytest --ckan-ini=test.ini --cov=ckanext.dcatapcrc --disable-warnings ckanext/dcatapcrc --junit-xml=/tmp/artifacts/junit/results.xml
+      run: pytest --ckan-ini=test.ini --cov=ckanext.dcatapcrc.tests --disable-warnings ckanext/dcatapcrc/tests --junit-xml=/tmp/artifacts/junit/results.xml
 
 

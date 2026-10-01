@@ -16,14 +16,14 @@ setup(
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # http://packaging.python.org/en/latest/tutorial.html#version
-    version='0.0.1',
+    version='1.0.0',
 
-    description='''''',
+    description='''CRC-specific DCAT-AP profile and SPARQL synchronization for CKAN''',
     long_description=long_description,
     long_description_content_type="text/markdown",
 
     # The project's main homepage.
-    url='https://github.com//ckanext-dcatapcrc',
+    url='https://github.com/TIBHannover/ckanext-dcatapcrc',
 
     # Author details
     author='''Pooya Oladazimi''',
@@ -43,9 +43,12 @@ setup(
         # Pick your license as you wish (should match "license" above)
         'License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)',
 
-        # Specify the Python versions you support here. In particular, ensure
-        # that you indicate whether you support Python 2, Python 3 or both.
-        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
+        'Programming Language :: Python :: 3.11',
+        'Programming Language :: Python :: 3.12',
+        'Framework :: CKAN',
     ],
 
 
@@ -55,7 +58,8 @@ setup(
     # You can just specify the packages manually here if your project is
     # simple. Or you can use find_packages().
     packages=find_packages(exclude=['contrib', 'docs', 'tests*']),
-        namespace_packages=['ckanext'],
+    namespace_packages=['ckanext'],
+    python_requires='>=3.9',
 
     install_requires=[
       # CKAN extensions should not list dependencies here, but in a separate

@@ -1,6 +1,7 @@
 $(document).ready(function(){
     
-    $('#push-to-sparql-btn').click(function(){
+    $('#push-to-sparql-btn').click(function(event){
+        event.preventDefault();
         let endPoint = $('#push-to-sparql-url').val();
         $.ajax({
             url: endPoint,
@@ -19,14 +20,14 @@ $(document).ready(function(){
     });
 
 
-    $('#delete-sparql-btn').click(function(){
+    $('#delete-sparql-btn').click(function(event){
+        event.preventDefault();
         let endPoint = $('#delete-sparql-url').val();
         $.ajax({
             url: endPoint,
             method: "GET",
             dataType: "json",            
             success: function(responseData) {  
-                console.info(responseData)            
               if (responseData["_result"]){
                 createSuccessAlert();
 
@@ -62,8 +63,8 @@ function createFailAlert(){
     let alertDiv = document.createElement("div");
     alertDiv.classList.add("alert", "alert-danger");
     let strongElement = document.createElement("strong");
-    strongElement.textContent = "Something wen wrong!";
-    let textNode = document.createTextNode("Please try later or check CKAN for possible bugs/issues!");    
+    strongElement.textContent = "Something went wrong!";
+    let textNode = document.createTextNode(" Please try later or check the CKAN logs for details.");
     alertDiv.appendChild(strongElement);
     alertDiv.appendChild(textNode);
     let container = document.getElementById("alert_container");

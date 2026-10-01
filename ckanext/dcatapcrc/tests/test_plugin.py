@@ -9,6 +9,46 @@ from ckanext.dcatapcrc.libs import helpers
 from ckanext.dcatapcrc.profiles.crc_profile import CRCDCATAPProfile
 
 
+def test_check_plugin_enabled_with_string_config(monkeypatch):
+    monkeypatch.setitem(
+        helpers.toolkit.config,
+        "ckan.plugins",
+        "stats dcat_crc dataset_reference",
+    )
+
+    assert helpers.check_plugin_enabled("dcat_crc")
+    assert not helpers.check_plugin_enabled("machine_link")
+
+
+def test_check_plugin_enabled_with_iterable_config(monkeypatch):
+    monkeypatch.setitem(
+        helpers.toolkit.config,
+        "ckan.plugins",
+        ["stats", "dcat_crc", "dataset_reference"],
+    )
+
+    assert helpers.check_plugin_enabled("dcat_crc")
+    assert not helpers.check_plugin_enabled("machine_link")
+
+    monkeypatch.setitem(
+        helpers.toolkit.config,
+        "ckan.plugins",
+        ("stats", "machine_link"),
+    )
+
+    assert helpers.check_plugin_enabled("machine_link")
+    assert not helpers.check_plugin_enabled("dcat_crc")
+
+
+def test_check_plugin_enabled_with_missing_none_or_empty_config(monkeypatch):
+    monkeypatch.delitem(helpers.toolkit.config, "ckan.plugins", raising=False)
+    assert not helpers.check_plugin_enabled("dcat_crc")
+
+    for value in (None, "", []):
+        monkeypatch.setitem(helpers.toolkit.config, "ckan.plugins", value)
+        assert not helpers.check_plugin_enabled("dcat_crc")
+
+
 def test_update_config_registers_assets_and_default_profiles(monkeypatch):
     registered = []
     monkeypatch.setattr(

@@ -14,7 +14,10 @@ DEFAULT_DCAT_PROFILES = ["euro_dcat_ap_2", "crc_dcat_ap"]
 
 
 def check_plugin_enabled(plugin_name):
-    return plugin_name in toolkit.config.get("ckan.plugins", "").split()
+    enabled_plugins = toolkit.config.get("ckan.plugins") or []
+    if isinstance(enabled_plugins, str):
+        enabled_plugins = enabled_plugins.split()
+    return plugin_name in enabled_plugins
 
 
 class Helper:

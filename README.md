@@ -1,123 +1,93 @@
-[![CI](https://github.com/TIBHannover/ckanext-dcatapcrc/actions/workflows/test.yml/badge.svg)](https://github.com/TIBHannover/ckanext-dcatapcrc/actions/workflows/test.yml)
-
 # ckanext-dcatapcrc
 
-**TODO:** Put a description of your extension here:  What does it do? What features does it have? Consider including some screenshots or embedding a video!
+[![Tests](https://github.com/TIBHannover/ckanext-dcatapcrc/actions/workflows/test.yml/badge.svg)](https://github.com/TIBHannover/ckanext-dcatapcrc/actions/workflows/test.yml)
 
+`ckanext-dcatapcrc` adds the CRC/SFB 1368 RDF profile to CKAN's DCAT output
+and keeps dataset metadata synchronized with an Apache Jena SPARQL endpoint.
+It also provides a sysadmin catalog page for exporting the complete catalog or
+queueing bulk push and delete jobs.
 
-## Requirements
+## Compatibility
 
-**TODO:** For example, you might want to mention here which versions of CKAN this
-extension works with.
+| CKAN version | Status |
+| --- | --- |
+| 2.11 | Supported and tested with Python 3.10 |
+| 2.10 | Supported and tested with Python 3.10 |
+| 2.9 and earlier | Not supported |
 
-If your extension works across different versions you can add the following table:
+The package requires Python 3.9 or newer and uses `ckanext-dcat` 2.4.4. The
+`euro_dcat_ap_2` profile remains the base profile so existing RDF output is not
+silently switched to DCAT-AP 3.
 
-Compatibility with core CKAN versions:
+## Behavior
 
-| CKAN version    | Compatible?   |
-| --------------- | ------------- |
-| 2.6 and earlier | not tested    |
-| 2.7             | not tested    |
-| 2.8             | not tested    |
-| 2.9             | not tested    |
+- Registers the `crc_dcat_ap` RDF profile and the `dcat_crc` CKAN plugin.
+- Adds CRC publication, equipment, sample, material, preparation, atmosphere,
+  data type, and analysis-method triples to dataset RDF.
+- Inserts dataset RDF into Jena after dataset creation.
+- Replaces the existing graph after dataset or resource updates.
+- Removes matching triples after dataset or resource deletion.
+- Adds a sysadmin-only **Catalog** page with Turtle export and queued bulk
+  synchronization actions.
+- Continues CKAN writes if Jena or an optional linked-metadata integration is
+  unavailable, while logging the failure for operators.
 
-Suggested values:
-
-* "yes"
-* "not tested" - I can't think of a reason why it wouldn't work
-* "not yet" - there is an intention to get it working
-* "no"
-
+The optional `dataset_reference`, `machine_link`, and `sample_link` plugins add
+their linked metadata when installed and enabled. Their absence does not stop
+the DCAT profile from loading.
 
 ## Installation
 
-**TODO:** Add any additional install steps to the list below.
-   For example installing any non-Python dependencies or adding any required
-   config settings.
+1. Activate the CKAN virtual environment.
+2. Clone and install the extension and its dependencies:
 
-To install ckanext-dcatapcrc:
+       git clone https://github.com/TIBHannover/ckanext-dcatapcrc.git
+       cd ckanext-dcatapcrc
+       pip install -r requirements.txt
+       pip install -e .
 
-1. Activate your CKAN virtual environment, for example:
+3. Add the base DCAT plugin and this extension to `ckan.plugins`:
 
-     . /usr/lib/ckan/default/bin/activate
+       ckan.plugins = ... dcat dcat_crc
 
-2. Clone the source and install it on the virtualenv
+4. Configure the RDF profile chain and Jena update endpoint:
 
-    git clone https://github.com//ckanext-dcatapcrc.git
-    cd ckanext-dcatapcrc
-    pip install -e .
-	pip install -r requirements.txt
+       ckanext.dcat.rdf.profiles = euro_dcat_ap_2 crc_dcat_ap
+       ckanext.apacheJena.endpoint = https://jena.example.test/dataset/update
 
-3. Add `dcatapcrc` to the `ckan.plugins` setting in your CKAN
-   config file (by default the config file is located at
-   `/etc/ckan/default/ckan.ini`).
+   The profile chain is set to the value above by default when no explicit
+   `ckanext.dcat.rdf.profiles` setting exists. Without a Jena endpoint, RDF
+   serialization and catalog export still work, but synchronization is skipped.
 
-4. Restart CKAN. For example if you've deployed CKAN with Apache on Ubuntu:
+5. Ensure a CKAN worker is running for the bulk jobs, then restart CKAN and the
+   web server.
 
-     sudo service apache2 reload
+No database migration is required by this extension.
 
+## Administration
 
-## Config settings
+Sysadmins can open `/dcatapcrc/load_admin_view` to:
 
-None at present
+- download the active catalog as `ckan-catalog.ttl`;
+- enqueue a refresh of all active dataset graphs in Jena; or
+- enqueue deletion of all active dataset graphs from Jena.
 
-**TODO:** Document any optional config settings here. For example:
+The bulk actions use CKAN's background job queue. Dataset and resource lifecycle
+callbacks synchronize the affected dataset directly.
 
-	# The minimum number of hours to wait before re-checking a resource
-	# (optional, default: 24).
-	ckanext.dcatapcrc.some_setting = some_default_value
+## Development and tests
 
+Install development requirements in a CKAN environment:
 
-## Developer installation
-
-To install ckanext-dcatapcrc for development, activate your CKAN virtualenv and
-do:
-
-    git clone https://github.com//ckanext-dcatapcrc.git
-    cd ckanext-dcatapcrc
-    python setup.py develop
+    pip install -r requirements.txt
     pip install -r dev-requirements.txt
+    pip install -e .
+    pytest --ckan-ini=test.ini --cov=ckanext.dcatapcrc ckanext/dcatapcrc
 
-
-## Tests
-
-To run the tests, do:
-
-    pytest --ckan-ini=test.ini
-
-
-## Releasing a new version of ckanext-dcatapcrc
-
-If ckanext-dcatapcrc should be available on PyPI you can follow these steps to publish a new version:
-
-1. Update the version number in the `setup.py` file. See [PEP 440](http://legacy.python.org/dev/peps/pep-0440/#public-version-identifiers) for how to choose version numbers.
-
-2. Make sure you have the latest version of necessary packages:
-
-    pip install --upgrade setuptools wheel twine
-
-3. Create a source and binary distributions of the new version:
-
-       python setup.py sdist bdist_wheel && twine check dist/*
-
-   Fix any errors you get.
-
-4. Upload the source distribution to PyPI:
-
-       twine upload dist/*
-
-5. Commit any outstanding changes:
-
-       git commit -a
-       git push
-
-6. Tag the new release of the project on GitHub with the version number from
-   the `setup.py` file. For example if the version number in `setup.py` is
-   0.0.1 then do:
-
-       git tag 0.0.1
-       git push --tags
+GitHub Actions runs the suite against CKAN 2.10 and 2.11. For a local container
+matching CI, use `docker-compose.ci.yml` and select the version through
+`CKAN_IMAGE`, `CKAN_VERSION`, and `SOLR_IMAGE`.
 
 ## License
 
-[AGPL](https://www.gnu.org/licenses/agpl-3.0.en.html)
+[GNU Affero General Public License v3.0](LICENSE)

@@ -1,118 +1,101 @@
-# encoding: utf-8
+import io
+import json
+import logging
 
-from flask import render_template
 import ckan.plugins.toolkit as toolkit
-import ckan.model as model
-import ckan.logic as logic
 from ckan.model import Package
 from ckanext.dcat.processors import RDFSerializer
-from xml.etree import ElementTree
-from flask import send_file
-import io
+from flask import render_template, send_file
+
 from ckanext.dcatapcrc.libs.helpers import Helper
-from ckan.model import Package
-import json
+
+
+log = logging.getLogger(__name__)
 
 
 class BaseController:
-
-
+    @staticmethod
     def load_admin_view():
-
         Helper.abort_if_not_admin()
+        return render_template("admin_panel.html")
 
-        return render_template('admin_panel.html')
-    
-
-
+    @staticmethod
     def export_catalog():
-
         Helper.abort_if_not_admin()
-                
-        all_datasets = Package.search_by_name('')
-
-        ElementTree.register_namespace("dc", "http://purl.org/dc/terms/")
-        ElementTree.register_namespace("dct", "http://purl.org/dc/dcmitype/")
-        ElementTree.register_namespace("dcat", "http://www.w3.org/ns/dcat#")
-        ElementTree.register_namespace("foaf", "http://xmlns.com/foaf/0.1/")
-        ElementTree.register_namespace("schemaorg", "https://schema.org/")
-        ElementTree.register_namespace("emno", "http://emmo.info/emmo/")
-        ElementTree.register_namespace("tema", "https://www.tib.eu/tema/")
-        ElementTree.register_namespace("envo", "http://purl.obolibrary.org/obo/envo/")
-        ElementTree.register_namespace("ncit", "http://purl.obolibrary.org/obo/ncit/")
-        ElementTree.register_namespace("vcard", "http://www.w3.org/2006/vcard/ns#")
-        ElementTree.register_namespace("owl", "http://www.w3.org/2002/07/owl#")
-        ElementTree.register_namespace("adms", "http://www.w3.org/ns/adms#")
-        ElementTree.register_namespace("time", "http://www.w3.org/2006/time")
-        ElementTree.register_namespace("locn", "http://www.w3.org/ns/locn#")
-        ElementTree.register_namespace("gsp", "http://www.opengis.net/ont/geosparql#")
-        ElementTree.register_namespace("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#")
-        
-        xml = ElementTree.fromstring("<RDF></RDF>")
         dataset_dicts = []
-        for dataset in all_datasets:
-            if dataset.state == 'active':                
-                package = toolkit.get_action('package_show')({}, {'name_or_id': dataset.name})
-                package = Helper.setDatasetUri(package)                                                              
-                dataset_dicts.append(package)
-                
-        serializer = RDFSerializer(profiles=package.get('profiles'))
-        rdf_output = serializer.serialize_catalog(dataset_dicts=dataset_dicts, _format="ttl")        
-        file = io.BytesIO(rdf_output.encode())        
-        return send_file(file, mimetype='application/ttl', attachment_filename="ckancatlog.ttl", as_attachment = True)
-    
+        for dataset in Package.search_by_name(""):
+            if dataset.state == "active":
+                package = toolkit.get_action("package_show")(
+                    {}, {"name_or_id": dataset.name}
+                )
+                dataset_dicts.append(Helper.set_dataset_uri(package))
 
+        serializer = RDFSerializer(profiles=Helper.get_rdf_profiles())
+        rdf_output = serializer.serialize_catalog(
+            dataset_dicts=dataset_dicts,
+            _format="ttl",
+        )
+        output = io.BytesIO(rdf_output.encode("utf-8"))
 
+        try:
+            return send_file(
+                output,
+                mimetype="text/turtle",
+                download_name="ckan-catalog.ttl",
+                as_attachment=True,
+            )
+        except TypeError:
+            # Flask < 2.0, retained for CKAN 2.10 installations using it.
+            output.seek(0)
+            return send_file(
+                output,
+                mimetype="text/turtle",
+                attachment_filename="ckan-catalog.ttl",
+                as_attachment=True,
+            )
+
+    @staticmethod
     def push_to_sparql():
         Helper.abort_if_not_admin()
-        all_datasets = Package.search_by_name('')
-        all_graphs = []
-        for dataset in all_datasets:
-            if dataset.state == 'active':
-                package = toolkit.get_action('package_show')({}, {'name_or_id': dataset.name})
-                package = Helper.setDatasetUri(package)   
-                graph = Helper.get_dataset_graph(package)
-                all_graphs.append(graph)
-
-
-        toolkit.enqueue_job(push_catalog_to_sparql, kwargs={'catalog_graphs': all_graphs})
-                
+        toolkit.enqueue_job(
+            push_catalog_to_sparql,
+            kwargs={"catalog_graphs": _active_dataset_graphs()},
+        )
         return json.dumps({"_result": True})
-    
 
-
+    @staticmethod
     def delete_from_sparql():
         Helper.abort_if_not_admin()
-        all_datasets = Package.search_by_name('')
-        all_graphs = []
-        for dataset in all_datasets:
-            if dataset.state == 'active':
-                package = toolkit.get_action('package_show')({}, {'name_or_id': dataset.name})
-                package = Helper.setDatasetUri(package)   
-                graph = Helper.get_dataset_graph(package)
-                all_graphs.append(graph)
-
-
-        toolkit.enqueue_job(delete_catalog_from_sparql, kwargs={'catalog_graphs': all_graphs})
-                
+        toolkit.enqueue_job(
+            delete_catalog_from_sparql,
+            kwargs={"catalog_graphs": _active_dataset_graphs()},
+        )
         return json.dumps({"_result": True})
-    
 
+
+def _active_dataset_graphs():
+    graphs = []
+    for dataset in Package.search_by_name(""):
+        if dataset.state == "active":
+            package = toolkit.get_action("package_show")(
+                {}, {"name_or_id": dataset.name}
+            )
+            graphs.append(Helper.get_dataset_graph(package))
+    return graphs
 
 
 def push_catalog_to_sparql(catalog_graphs):
     for graph in catalog_graphs:
         try:
-            res_d = Helper.delete_from_sparql(graph)
-            res_i = Helper.insert_to_sparql(graph)
-        except:
-            continue
-
+            Helper.delete_from_sparql(graph)
+            Helper.insert_to_sparql(graph)
+        except Exception:
+            log.exception("Failed to push catalog graph to SPARQL")
 
 
 def delete_catalog_from_sparql(catalog_graphs):
     for graph in catalog_graphs:
         try:
-            res_d = Helper.delete_from_sparql(graph)            
-        except:
-            continue
+            Helper.delete_from_sparql(graph)
+        except Exception:
+            log.exception("Failed to delete catalog graph from SPARQL")

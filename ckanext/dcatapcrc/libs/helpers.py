@@ -35,7 +35,7 @@ class Helper:
 
     @staticmethod
     def get_apache_jena_endpoint():
-        return toolkit.config.get("ckanext.apacheJena.endpoint")
+        return toolkit.config.get("ckanext.apachejena.endpoint")
 
     @staticmethod
     def get_linked_publication(dataset_name):

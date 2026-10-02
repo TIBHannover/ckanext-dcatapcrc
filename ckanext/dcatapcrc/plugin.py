@@ -11,6 +11,7 @@ from ckanext.dcatapcrc.libs.helpers import Helper
 log = logging.getLogger(__name__)
 
 
+@toolkit.blanket.config_declarations
 class DcatapcrcPlugin(plugins.SingletonPlugin):
     plugins.implements(plugins.IConfigurer)
     plugins.implements(plugins.IBlueprint)

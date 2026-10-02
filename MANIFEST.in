@@ -2,4 +2,4 @@ include README.md
 include CHANGELOG.md
 include LICENSE
 include requirements.txt
-recursive-include ckanext/dcatapcrc *.html *.json *.js *.yml *.less *.css *.mo
+recursive-include ckanext/dcatapcrc *.html *.json *.js *.yml *.yaml *.less *.css *.mo

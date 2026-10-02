@@ -1,12 +1,80 @@
+import logging
 from pathlib import Path
+from unittest.mock import Mock
 
+import pytest
 import yaml
+from ckan.common import CKANConfig
+from ckan.config.declaration import Declaration, Key
 from rdflib import BNode, Graph, Literal, URIRef
 
 from ckanext.dcatapcrc import controller
 from ckanext.dcatapcrc import plugin as plugin_module
 from ckanext.dcatapcrc.libs import helpers
 from ckanext.dcatapcrc.profiles.crc_profile import CRCDCATAPProfile
+
+
+CANONICAL_JENA_KEY = "ckanext.apachejena.endpoint"
+LEGACY_JENA_KEY = "ckanext.apacheJena.endpoint"
+
+
+def _declared_config(values):
+    declaration = Declaration()
+    plugin_module.DcatapcrcPlugin().declare_config_options(declaration, Key())
+    config = CKANConfig(values)
+    declaration.make_safe(config)
+    return declaration, config
+
+
+@pytest.mark.ckan_config("ckan.plugins", "dcat_crc")
+@pytest.mark.usefixtures("with_plugins")
+def test_canonical_jena_endpoint_is_declared(ckan_config, caplog):
+    assert ckan_config.is_declared(CANONICAL_JENA_KEY)
+    ckan_config.get(CANONICAL_JENA_KEY)
+    assert f"Option {CANONICAL_JENA_KEY} is not declared" not in caplog.text
+
+
+def test_canonical_jena_endpoint_is_used(monkeypatch):
+    declaration, config = _declared_config(
+        {CANONICAL_JENA_KEY: "https://jena.example.test/canonical"}
+    )
+    monkeypatch.setattr(helpers.toolkit, "config", config)
+
+    assert declaration.get(CANONICAL_JENA_KEY).legacy_key == LEGACY_JENA_KEY
+    assert helpers.Helper.get_apache_jena_endpoint() == (
+        "https://jena.example.test/canonical"
+    )
+
+
+def test_legacy_jena_endpoint_populates_canonical_key(monkeypatch, caplog):
+    with caplog.at_level(logging.WARNING, logger="ckan.config.declaration"):
+        _, config = _declared_config(
+            {LEGACY_JENA_KEY: "https://jena.example.test/legacy"}
+        )
+    monkeypatch.setattr(helpers.toolkit, "config", config)
+
+    assert config[CANONICAL_JENA_KEY] == "https://jena.example.test/legacy"
+    assert helpers.Helper.get_apache_jena_endpoint() == (
+        "https://jena.example.test/legacy"
+    )
+    assert (
+        f"Config option '{LEGACY_JENA_KEY}' is deprecated. "
+        f"Use '{CANONICAL_JENA_KEY}' instead"
+    ) in caplog.text
+
+
+def test_canonical_jena_endpoint_takes_precedence(monkeypatch):
+    _, config = _declared_config(
+        {
+            CANONICAL_JENA_KEY: "https://jena.example.test/canonical",
+            LEGACY_JENA_KEY: "https://jena.example.test/legacy",
+        }
+    )
+    monkeypatch.setattr(helpers.toolkit, "config", config)
+
+    assert helpers.Helper.get_apache_jena_endpoint() == (
+        "https://jena.example.test/canonical"
+    )
 
 
 def test_check_plugin_enabled_with_string_config(monkeypatch):
@@ -220,15 +288,38 @@ def test_sparql_terms_use_rdflib_serialization():
     assert obj == '"O\'Brien"'
 
 
-def test_missing_jena_endpoint_skips_writes(monkeypatch):
-    monkeypatch.delitem(
-        helpers.toolkit.config,
-        "ckanext.apacheJena.endpoint",
-        raising=False,
+def _graph_for_sparql_write():
+    graph = Graph()
+    graph.add(
+        (
+            URIRef("https://data.test/dataset/one"),
+            URIRef("https://schema.org/name"),
+            Literal("Dataset"),
+        )
     )
+    return graph
 
-    assert helpers.Helper.insert_to_sparql(Graph()) is None
-    assert helpers.Helper.delete_from_sparql(Graph()) is None
+
+def test_missing_jena_endpoint_skips_insert(monkeypatch, caplog):
+    _, config = _declared_config({})
+    monkeypatch.setattr(helpers.toolkit, "config", config)
+    sparql_wrapper = Mock()
+    monkeypatch.setattr(helpers, "SPARQLWrapper", sparql_wrapper)
+
+    assert helpers.Helper.insert_to_sparql(_graph_for_sparql_write()) is None
+    sparql_wrapper.assert_not_called()
+    assert "No Apache Jena endpoint configured; skipping SPARQL insert" in caplog.text
+
+
+def test_missing_jena_endpoint_skips_delete(monkeypatch, caplog):
+    _, config = _declared_config({})
+    monkeypatch.setattr(helpers.toolkit, "config", config)
+    sparql_wrapper = Mock()
+    monkeypatch.setattr(helpers, "SPARQLWrapper", sparql_wrapper)
+
+    assert helpers.Helper.delete_from_sparql(_graph_for_sparql_write()) is None
+    sparql_wrapper.assert_not_called()
+    assert "No Apache Jena endpoint configured; skipping SPARQL delete" in caplog.text
 
 
 def test_export_catalog_supports_empty_catalog(monkeypatch):

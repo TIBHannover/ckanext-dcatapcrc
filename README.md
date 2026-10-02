@@ -53,17 +53,15 @@ the DCAT profile from loading.
 4. Configure the RDF profile chain and Jena update endpoint:
 
        ckanext.dcat.rdf.profiles = euro_dcat_ap_2 crc_dcat_ap
-       ckanext.apachejena.endpoint = https://jena.example.test/dataset/update
+       ckanext.dcatapcrc.apachejena.endpoint = https://jena.example.test/dataset/update
 
    The profile chain is set to the value above by default when no explicit
    `ckanext.dcat.rdf.profiles` setting exists. Without a Jena endpoint, RDF
    serialization and catalog export still work, but synchronization is skipped.
-   The equivalent environment variable is `CKANEXT__APACHEJENA__ENDPOINT`.
-   The previous `ckanext.apacheJena.endpoint` spelling is deprecated but remains
-   supported for backward compatibility.
-   Both `dcat_crc` and `crc1153_dcat_profile` can run independently. Each
-   declares this shared setting only when another enabled plugin has not already
-   declared it, so enabling both plugins is supported.
+   The equivalent environment variable is
+   `CKANEXT__DCATAPCRC__APACHEJENA__ENDPOINT`. The previous shared
+   `ckanext.apachejena.endpoint` and historical `ckanext.apacheJena.endpoint`
+   spellings remain supported for backward compatibility.
 
 5. Ensure a CKAN worker is running for the bulk jobs, then restart CKAN and the
    web server.

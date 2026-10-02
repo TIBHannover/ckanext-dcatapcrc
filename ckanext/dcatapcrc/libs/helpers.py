@@ -35,7 +35,26 @@ class Helper:
 
     @staticmethod
     def get_apache_jena_endpoint():
-        return toolkit.config.get("ckanext.apachejena.endpoint")
+        canonical_key = "ckanext.dcatapcrc.apachejena.endpoint"
+        config = toolkit.config
+        if canonical_key in config:
+            value = config[canonical_key]
+            if value is not None:
+                return value
+
+        for legacy_key in (
+            "ckanext.apachejena.endpoint",
+            "ckanext.apacheJena.endpoint",
+        ):
+            if legacy_key in config and config[legacy_key] is not None:
+                log.warning(
+                    "Config option '%s' is deprecated. Use '%s' instead",
+                    legacy_key,
+                    canonical_key,
+                )
+                return config[legacy_key]
+
+        return None
 
     @staticmethod
     def get_linked_publication(dataset_name):

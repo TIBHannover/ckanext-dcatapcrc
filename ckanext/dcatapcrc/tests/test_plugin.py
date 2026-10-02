@@ -15,8 +15,9 @@ from ckanext.dcatapcrc.libs import helpers
 from ckanext.dcatapcrc.profiles.crc_profile import CRCDCATAPProfile
 
 
-CANONICAL_JENA_KEY = "ckanext.apachejena.endpoint"
-LEGACY_JENA_KEY = "ckanext.apacheJena.endpoint"
+CANONICAL_JENA_KEY = "ckanext.dcatapcrc.apachejena.endpoint"
+SHARED_JENA_KEY = "ckanext.apachejena.endpoint"
+HISTORICAL_JENA_KEY = "ckanext.apacheJena.endpoint"
 
 
 def _declared_config(values):
@@ -35,16 +36,13 @@ def test_canonical_jena_endpoint_is_declared(ckan_config, caplog):
     assert f"Option {CANONICAL_JENA_KEY} is not declared" not in caplog.text
 
 
-def test_plugin_implements_guarded_config_declaration():
+def test_plugin_declares_only_dcatapcrc_owned_config():
     assert plugins.IConfigDeclaration.implemented_by(plugin_module.DcatapcrcPlugin)
-
     declaration = Declaration()
-    existing = declaration.declare(CANONICAL_JENA_KEY)
-    existing.legacy_key = LEGACY_JENA_KEY
-
     plugin_module.DcatapcrcPlugin().declare_config_options(declaration, Key())
 
-    assert declaration.get(CANONICAL_JENA_KEY) is existing
+    assert declaration.get(CANONICAL_JENA_KEY).legacy_key == SHARED_JENA_KEY
+    assert SHARED_JENA_KEY not in declaration
 
 
 def test_canonical_jena_endpoint_is_used(monkeypatch):
@@ -53,40 +51,66 @@ def test_canonical_jena_endpoint_is_used(monkeypatch):
     )
     monkeypatch.setattr(helpers.toolkit, "config", config)
 
-    assert declaration.get(CANONICAL_JENA_KEY).legacy_key == LEGACY_JENA_KEY
+    assert declaration.get(CANONICAL_JENA_KEY).legacy_key == SHARED_JENA_KEY
     assert helpers.Helper.get_apache_jena_endpoint() == (
         "https://jena.example.test/canonical"
     )
 
 
-def test_legacy_jena_endpoint_populates_canonical_key(monkeypatch, caplog):
+def test_shared_jena_endpoint_populates_canonical_key(monkeypatch, caplog):
     with caplog.at_level(logging.WARNING, logger="ckan.config.declaration"):
         _, config = _declared_config(
-            {LEGACY_JENA_KEY: "https://jena.example.test/legacy"}
+            {SHARED_JENA_KEY: "https://jena.example.test/shared"}
         )
     monkeypatch.setattr(helpers.toolkit, "config", config)
 
-    assert config[CANONICAL_JENA_KEY] == "https://jena.example.test/legacy"
+    assert config[CANONICAL_JENA_KEY] == "https://jena.example.test/shared"
     assert helpers.Helper.get_apache_jena_endpoint() == (
-        "https://jena.example.test/legacy"
+        "https://jena.example.test/shared"
     )
     assert (
-        f"Config option '{LEGACY_JENA_KEY}' is deprecated. "
+        f"Config option '{SHARED_JENA_KEY}' is deprecated. "
         f"Use '{CANONICAL_JENA_KEY}' instead"
     ) in caplog.text
 
 
-def test_canonical_jena_endpoint_takes_precedence(monkeypatch):
+def test_historical_jena_endpoint_remains_supported(monkeypatch, caplog):
+    _, config = _declared_config(
+        {HISTORICAL_JENA_KEY: "https://jena.example.test/historical"}
+    )
+    monkeypatch.setattr(helpers.toolkit, "config", config)
+
+    assert helpers.Helper.get_apache_jena_endpoint() == (
+        "https://jena.example.test/historical"
+    )
+    assert HISTORICAL_JENA_KEY in caplog.text
+
+
+def test_canonical_jena_endpoint_takes_precedence_over_shared(monkeypatch):
     _, config = _declared_config(
         {
             CANONICAL_JENA_KEY: "https://jena.example.test/canonical",
-            LEGACY_JENA_KEY: "https://jena.example.test/legacy",
+            SHARED_JENA_KEY: "https://jena.example.test/shared",
         }
     )
     monkeypatch.setattr(helpers.toolkit, "config", config)
 
     assert helpers.Helper.get_apache_jena_endpoint() == (
         "https://jena.example.test/canonical"
+    )
+
+
+def test_shared_jena_endpoint_takes_precedence_over_historical(monkeypatch):
+    _, config = _declared_config(
+        {
+            SHARED_JENA_KEY: "https://jena.example.test/shared",
+            HISTORICAL_JENA_KEY: "https://jena.example.test/historical",
+        }
+    )
+    monkeypatch.setattr(helpers.toolkit, "config", config)
+
+    assert helpers.Helper.get_apache_jena_endpoint() == (
+        "https://jena.example.test/shared"
     )
 
 

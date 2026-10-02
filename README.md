@@ -59,9 +59,9 @@ the DCAT profile from loading.
    `ckanext.dcat.rdf.profiles` setting exists. Without a Jena endpoint, RDF
    serialization and catalog export still work, but synchronization is skipped.
    The equivalent environment variable is
-   `CKANEXT__DCATAPCRC__APACHEJENA__ENDPOINT`. The previous shared
-   `ckanext.apachejena.endpoint` and historical `ckanext.apacheJena.endpoint`
-   spellings remain supported for backward compatibility.
+   `CKANEXT__DCATAPCRC__APACHEJENA__ENDPOINT`. The historical
+   `ckanext.apacheJena.endpoint` spelling remains supported for backward
+   compatibility.
 
 5. Ensure a CKAN worker is running for the bulk jobs, then restart CKAN and the
    web server.

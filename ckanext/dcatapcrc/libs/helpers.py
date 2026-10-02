@@ -42,10 +42,7 @@ class Helper:
             if value is not None:
                 return value
 
-        for legacy_key in (
-            "ckanext.apachejena.endpoint",
-            "ckanext.apacheJena.endpoint",
-        ):
+        for legacy_key in ("ckanext.apachejena.endpoint",):
             if legacy_key in config and config[legacy_key] is not None:
                 log.warning(
                     "Config option '%s' is deprecated. Use '%s' instead",

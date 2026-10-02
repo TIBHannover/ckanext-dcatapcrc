@@ -41,8 +41,8 @@ def test_plugin_declares_only_dcatapcrc_owned_config():
     declaration = Declaration()
     plugin_module.DcatapcrcPlugin().declare_config_options(declaration, Key())
 
+    assert declaration.get(SHARED_JENA_KEY).legacy_key == HISTORICAL_JENA_KEY
     assert declaration.get(CANONICAL_JENA_KEY).legacy_key == SHARED_JENA_KEY
-    assert SHARED_JENA_KEY not in declaration
 
 
 def test_canonical_jena_endpoint_is_used(monkeypatch):
@@ -51,6 +51,7 @@ def test_canonical_jena_endpoint_is_used(monkeypatch):
     )
     monkeypatch.setattr(helpers.toolkit, "config", config)
 
+    assert declaration.get(SHARED_JENA_KEY).legacy_key == HISTORICAL_JENA_KEY
     assert declaration.get(CANONICAL_JENA_KEY).legacy_key == SHARED_JENA_KEY
     assert helpers.Helper.get_apache_jena_endpoint() == (
         "https://jena.example.test/canonical"

@@ -2,6 +2,9 @@ version: 1
 groups:
   - annotation: CRC DCAT Apache Jena settings
     options:
+      - key: ckanext.apachejena.endpoint
+        legacy_key: ckanext.apacheJena.endpoint
+        description: Shared Apache Jena SPARQL update endpoint.
       - key: ckanext.dcatapcrc.apachejena.endpoint
         legacy_key: ckanext.apachejena.endpoint
         description: Apache Jena SPARQL update endpoint used for CRC DCAT dataset metadata synchronization.

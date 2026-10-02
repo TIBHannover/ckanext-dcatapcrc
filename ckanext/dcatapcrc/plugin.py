@@ -1,7 +1,9 @@
 import logging
+from pathlib import Path
 
 import ckan.plugins as plugins
 import ckan.plugins.toolkit as toolkit
+import yaml
 from flask import Blueprint
 
 from ckanext.dcatapcrc.controller import BaseController
@@ -9,14 +11,25 @@ from ckanext.dcatapcrc.libs.helpers import Helper
 
 
 log = logging.getLogger(__name__)
+CONFIG_DECLARATION = Path(__file__).resolve().parent / "config_declaration.yaml"
+APACHE_JENA_ENDPOINT = "ckanext.apachejena.endpoint"
 
 
-@toolkit.blanket.config_declarations
 class DcatapcrcPlugin(plugins.SingletonPlugin):
+    plugins.implements(plugins.IConfigDeclaration)
     plugins.implements(plugins.IConfigurer)
     plugins.implements(plugins.IBlueprint)
     plugins.implements(plugins.IPackageController)
     plugins.implements(plugins.IResourceController)
+
+    def declare_config_options(self, declaration, _key):
+        # crc1153_dcat_profile independently uses the same setting. CKAN
+        # declarations do not merge, so reuse an existing shared declaration.
+        if APACHE_JENA_ENDPOINT in declaration:
+            return
+        declaration.load_dict(
+            yaml.safe_load(CONFIG_DECLARATION.read_text(encoding="utf-8"))
+        )
 
     def update_config(self, config_):
         toolkit.add_template_directory(config_, "templates")

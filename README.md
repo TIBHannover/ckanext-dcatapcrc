@@ -61,6 +61,9 @@ the DCAT profile from loading.
    The equivalent environment variable is `CKANEXT__APACHEJENA__ENDPOINT`.
    The previous `ckanext.apacheJena.endpoint` spelling is deprecated but remains
    supported for backward compatibility.
+   Both `dcat_crc` and `crc1153_dcat_profile` can run independently. Each
+   declares this shared setting only when another enabled plugin has not already
+   declared it, so enabling both plugins is supported.
 
 5. Ensure a CKAN worker is running for the bulk jobs, then restart CKAN and the
    web server.

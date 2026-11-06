@@ -26,7 +26,7 @@ class BaseController:
         for dataset in Package.search_by_name(""):
             if dataset.state == "active":
                 package = toolkit.get_action("package_show")(
-                    {}, {"name_or_id": dataset.name}
+                    {}, {"id": dataset.name}
                 )
                 dataset_dicts.append(Helper.set_dataset_uri(package))
 
@@ -78,7 +78,7 @@ def _active_dataset_graphs():
     for dataset in Package.search_by_name(""):
         if dataset.state == "active":
             package = toolkit.get_action("package_show")(
-                {}, {"name_or_id": dataset.name}
+                {}, {"id": dataset.name}
             )
             graphs.append(Helper.get_dataset_graph(package))
     return graphs

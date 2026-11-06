@@ -59,7 +59,7 @@ class DcatapcrcPlugin(plugins.SingletonPlugin):
 
     def after_dataset_create(self, context, pkg_dict):
         try:
-            package = self._package_show(pkg_dict["id"])
+            package = self._package_show(context, pkg_dict["id"])
             Helper.insert_to_sparql(Helper.get_dataset_graph(package))
         except Exception:
             log.exception("Failed to insert CRC dataset metadata into SPARQL")
@@ -67,7 +67,7 @@ class DcatapcrcPlugin(plugins.SingletonPlugin):
 
     def after_dataset_update(self, context, pkg_dict):
         try:
-            package = self._package_show(pkg_dict["id"])
+            package = self._package_show(context, pkg_dict["id"])
             graph = Helper.get_dataset_graph(package)
             Helper.delete_from_sparql(graph)
             Helper.insert_to_sparql(graph)
@@ -77,7 +77,7 @@ class DcatapcrcPlugin(plugins.SingletonPlugin):
 
     def after_dataset_delete(self, context, pkg_dict):
         try:
-            package = self._package_show(pkg_dict["id"])
+            package = self._package_show(context, pkg_dict["id"])
             Helper.delete_from_sparql(Helper.get_dataset_graph(package))
         except Exception:
             log.exception("Failed to delete CRC dataset metadata from SPARQL")
@@ -118,7 +118,7 @@ class DcatapcrcPlugin(plugins.SingletonPlugin):
     def after_resource_update(self, context, resource):
         try:
             package_id = resource.get("package_id") or resource.get("name")
-            package = self._package_show(package_id)
+            package = self._package_show(context, package_id)
             graph = Helper.get_dataset_graph(package)
             Helper.delete_from_sparql(graph)
             Helper.insert_to_sparql(graph)
@@ -129,10 +129,10 @@ class DcatapcrcPlugin(plugins.SingletonPlugin):
     def before_resource_delete(self, context, resource, resources):
         try:
             resource_dict = toolkit.get_action("resource_show")(
-                {}, {"id": resource["id"]}
+                context, {"id": resource["id"]}
             )
             package_id = resource_dict.get("package_id") or resource_dict.get("name")
-            package = self._package_show(package_id)
+            package = self._package_show(context, package_id)
             Helper.delete_from_sparql(Helper.get_dataset_graph(package))
         except Exception:
             log.exception("Failed to delete CRC resource metadata from SPARQL")
@@ -196,10 +196,10 @@ class DcatapcrcPlugin(plugins.SingletonPlugin):
         return self.before_resource_show(resource_dict)
 
     @staticmethod
-    def _package_show(package_id):
+    def _package_show(context, package_id):
         if not package_id:
             raise ValueError("Resource does not identify its parent dataset")
-        return toolkit.get_action("package_show")({}, {"name_or_id": package_id})
+        return toolkit.get_action("package_show")(context, {"id": package_id})
 
     @staticmethod
     def _is_resource_dict(data):

@@ -13,6 +13,23 @@ log = logging.getLogger(__name__)
 DEFAULT_DCAT_PROFILES = ["euro_dcat_ap_2", "crc_dcat_ap"]
 
 
+class SparqlUpdateError(RuntimeError):
+    """A sanitized failure raised by an individual SPARQL update request."""
+
+    def __init__(self, operation, completed, error):
+        status = getattr(error, "code", None)
+        if status is None:
+            status = getattr(getattr(error, "response", None), "status_code", None)
+        status_text = " with HTTP %s" % status if status is not None else ""
+        super().__init__(
+            "SPARQL %s failed%s after %d successful request(s)"
+            % (operation, status_text, completed)
+        )
+        self.operation = operation
+        self.completed = completed
+        self.status = status
+
+
 def check_plugin_enabled(plugin_name):
     enabled_plugins = toolkit.config.get("ckan.plugins") or []
     if isinstance(enabled_plugins, str):
@@ -85,13 +102,18 @@ class Helper:
             return None
 
         results = None
+        completed = 0
         for subject, predicate, obj in graph:
             subject, predicate, obj = Helper.clean_triples(subject, predicate, obj)
             query = "INSERT DATA{ %s %s %s . }" % (subject, predicate, obj)
             sparql = SPARQLWrapper(endpoint)
             sparql.setMethod(POST)
             sparql.setQuery(query)
-            results = sparql.query()
+            try:
+                results = sparql.query()
+            except Exception as error:
+                raise SparqlUpdateError("INSERT", completed, error) from None
+            completed += 1
         return results
 
     @staticmethod
@@ -102,6 +124,7 @@ class Helper:
             return None
 
         results = None
+        completed = 0
         for subject, predicate, obj in graph:
             subject, predicate, obj = Helper.clean_triples(subject, predicate, obj)
             if obj.startswith("_:"):
@@ -118,7 +141,11 @@ class Helper:
             sparql = SPARQLWrapper(endpoint)
             sparql.setMethod(POST)
             sparql.setQuery(query)
-            results = sparql.query()
+            try:
+                results = sparql.query()
+            except Exception as error:
+                raise SparqlUpdateError("DELETE", completed, error) from None
+            completed += 1
         return results
 
     @staticmethod
